@@ -12,7 +12,7 @@ public class Tracer : MonoBehaviour {
     float treshold = 0.84f;
     bool pressedKey = false;
 
-	public void Setup () 
+	void Start () 
 	{
         textureWidth = 320;
         textureHeight = 240;
@@ -31,7 +31,7 @@ public class Tracer : MonoBehaviour {
 		texture.SetPixels(colors);
 		texture.Apply(false);
     
-        depthTexture = FindObjectOfType<DisplayDepth>().tex;
+        depthTexture = FindObjectOfType<Depther>().depthTexture;
 	}
 
     void Update ()
@@ -45,24 +45,27 @@ public class Tracer : MonoBehaviour {
 	
 	void LateUpdate () 
 	{
-        Color[] heights = depthTexture.GetPixels();
-        colors = texture.GetPixels();
-        int i = 0;
-        while (i < particleCount) 
-        {
-        	int gridX = i % textureWidth;
-        	int gridY = textureHeight - (int)Mathf.Floor(i / textureWidth);
-        	float height = 1f - heights[i].r;
-        	// bool isDepth = height != 0f;
-        	if (height > treshold) {
-        		colors[i].r = 1f;
-        	} else {
-        		colors[i].r = colors[i].r * 0.95f;
-        	}
-            i++;
-        }
+		if (depthTexture)
+		{
+	        Color[] heights = depthTexture.GetPixels();
+	        colors = texture.GetPixels();
+	        int i = 0;
+	        while (i < particleCount) 
+	        {
+	        	int gridX = i % textureWidth;
+	        	int gridY = textureHeight - (int)Mathf.Floor(i / textureWidth);
+	        	float height = 1f - heights[i].r;
+	        	bool isDepth = height != 1f;
+	        	if (isDepth && height > treshold) {
+	        		colors[i].r = 1f;
+	        	} else {
+	        		colors[i].r = colors[i].r * 0.95f;
+	        	}
+	            i++;
+	        }
 
-		texture.SetPixels(colors);
-		texture.Apply(false);
+			texture.SetPixels(colors);
+			texture.Apply(false);
+		}
 	}
 }
