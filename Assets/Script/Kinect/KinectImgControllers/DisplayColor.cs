@@ -7,7 +7,7 @@ public class DisplayColor : MonoBehaviour {
 	public DeviceOrEmulator devOrEmu;
 	private Kinect.KinectInterface kinect;
 	
-	private Texture2D tex;
+	public Texture2D tex;
 	
 	// Use this for initialization
 	void Start () {
