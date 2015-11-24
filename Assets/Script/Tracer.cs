@@ -10,7 +10,6 @@ public class Tracer : MonoBehaviour {
 	int particleCount;
     Texture2D depthTexture;
     float treshold = 0.84f;
-    bool pressedKey = false;
 
 	void Start () 
 	{
@@ -52,8 +51,6 @@ public class Tracer : MonoBehaviour {
 	        int i = 0;
 	        while (i < particleCount) 
 	        {
-	        	int gridX = i % textureWidth;
-	        	int gridY = textureHeight - (int)Mathf.Floor(i / textureWidth);
 	        	float height = 1f - heights[i].r;
 	        	bool isDepth = height != 1f;
 	        	if (isDepth && height > treshold) {
