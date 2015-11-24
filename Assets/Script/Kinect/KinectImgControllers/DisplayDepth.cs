@@ -11,7 +11,8 @@ public class DisplayDepth : MonoBehaviour {
 	void Start () {
 		tex = new Texture2D(320,240,TextureFormat.ARGB32,false);
 		GetComponent<Renderer>().material.mainTexture = tex;
-		FindObjectOfType<Particles>().Setup();
+		// FindObjectOfType<Particles>().Setup();
+		FindObjectOfType<Tracer>().Setup();
 	}
 	
 	// Update is called once per frame
