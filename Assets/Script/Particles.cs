@@ -49,9 +49,12 @@ public class Particles : MonoBehaviour
         	float y = gridY * padding - textureHeight * padding / 2;
         	float z = height * depthness;
 
+            // Color color = colors[i];
+            float lum = Mathf.SmoothStep(0.5f, 0.75f, 1f - height);// * (color.r + color.b + color.g) / 3.0f; 
+
             particleArray[i].position = new Vector3(x, y, z);
-            particleArray[i].color = colors[i];
-            //new Color(1f - height, 0f, 0f, 1f);
+            // particleArray[i].color = colors[i];
+            particleArray[i].color = new Color(lum, lum, lum, 1f);
             particleArray[i].size = isDepth ? 0.1f : 0f;
             particleArray[i].startLifetime = isDepth ? 5f : 0f;
             particleArray[i].lifetime = isDepth ? 5f : 0f;
