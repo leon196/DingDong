@@ -1,0 +1,63 @@
+﻿using UnityEngine;
+using System.Collections;
+
+public class Particles : MonoBehaviour 
+{
+    ParticleSystem particleSystem;
+    DisplayDepth depther;
+    Texture2D depthTexture;
+    ParticleSystem.Particle[] particleArray;
+    int textureWidth;
+    int textureHeight;
+    int particleCount;
+    float padding = 0.1f;
+    float depthness = 100f;
+
+    public void Setup () 
+    {
+        depther = FindObjectOfType<DisplayDepth>();
+        depthTexture = depther.tex;
+        textureWidth = 320;
+        textureHeight = 240;
+        particleCount = textureWidth * textureHeight;
+        particleArray = new ParticleSystem.Particle[particleCount];
+
+        particleSystem = GetComponent<ParticleSystem>();
+        particleSystem.maxParticles = particleCount;
+        particleSystem.Emit(particleCount);
+    }
+
+    void LateUpdate () 
+    {
+    	if (Input.GetKeyDown(KeyCode.Space)) {
+    		bool iterate = false;
+	        int particleCountAlive = particleSystem.GetParticles(particleArray);
+	        if (particleCountAlive > 0) {
+	        	iterate = true;
+        		particleSystem.Emit(particleCount);
+	        }
+	        Color[] heights = depthTexture.GetPixels();
+	        int i = 0;
+	        while (i < particleCount) 
+	        {
+	        	int gridX = i % textureWidth;
+	        	int gridY = textureHeight - (int)Mathf.Floor(i / textureWidth);
+	        	float height = heights[i].r;
+	        	bool isDepth = height != 0f;
+
+	        	float x = gridX * padding - textureWidth * padding / 2;
+	        	float y = gridY * padding - textureHeight * padding / 2;
+	        	float z = height * depthness;
+
+	            particleArray[i].position = new Vector3(x, y, z);
+	            particleArray[i].color = new Color(1f - height, 0f, 0f, 1f);
+	            particleArray[i].size = isDepth ? 0.1f : 0f;
+	            particleArray[i].startLifetime = isDepth ? 5f : 0f;
+	            particleArray[i].lifetime = isDepth ? 5f : 0f;
+	            particleArray[i].velocity = new Vector3(Random.Range(-2f, 2f), Random.Range(-2f, 2f), 10f + Random.Range(1f, 2f));
+	            i++;
+	        }
+	        particleSystem.SetParticles(particleArray, particleCount);
+	    }
+	}
+}
