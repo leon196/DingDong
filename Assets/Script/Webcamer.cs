@@ -37,7 +37,7 @@ public class Webcamer : MonoBehaviour
 		}
 	}
 
-	void LateUpdate ()
+	void Update ()
 	{
 		Color[] colorPixelArray = textureWebcam.GetPixels();
 		for (int i = 0; i < colorArray.Length; ++i) {
@@ -45,8 +45,11 @@ public class Webcamer : MonoBehaviour
 			Color newColor = colorPixelArray[i];
 			Color bufferColor = colorBufferArray[i];
 			// currentColor.r *= 0.99f;
-			float lum = newColor.r - bufferColor.r;
-			lum = lum < 0.1f ? currentColor.r * 0.99f : newColor.r;//Mathf.Max(currentColor.r, newColor.r - bufferColor.r);
+			float lumCurrent = (currentColor.r + currentColor.g + currentColor.b) / 3.0f;
+			float lumNew = (newColor.r + newColor.g + newColor.b) / 3.0f;
+			float lumBuffer = (bufferColor.r + bufferColor.g + bufferColor.b) / 3.0f;
+			float lum = Mathf.Abs(lumNew - lumBuffer);
+			lum = lum < 0.1f ? lumCurrent * 0.95f : 1f;//Mathf.Max(currentColor.r, newColor.r - bufferColor.r);
 			colorArray[i] = new Color(lum, lum, lum, 1f);
 			colorBufferArray[i] = newColor;
 		}
