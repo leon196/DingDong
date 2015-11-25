@@ -7,7 +7,9 @@ public class Depther : MonoBehaviour
 	KinectSensor kinectSensor;
 	short[] depthData;
 	Color32[] colorArray;
-	public Texture2D depthTexture;
+	public Texture2D texture;
+	public float depthMax;
+	public float depthMin;
 
 	void Awake () 
 	{
@@ -17,9 +19,9 @@ public class Depther : MonoBehaviour
 		colorArray = new Color32[320 * 240];
 		for(int i = 0; i < 320 * 240; i++)
 		{
-			colorArray[i] = new Color32(255, 255, 255, 255);
+			colorArray[i] = new Color32(0, 0, 0, 255);
 		}
-		depthTexture = new Texture2D(320, 240, TextureFormat.ARGB32, false);
+		texture = new Texture2D(320, 240, TextureFormat.ARGB32, false);
 	}
 	
 	void Update () 
@@ -31,16 +33,18 @@ public class Depther : MonoBehaviour
 	{
 		if (KinectSensor.Instance != null && KinectSensor.Instance.pollDepth())
 		{
+			depthMax = 0f;
+			depthMin = 1f;
 			for(int i = 0; i < 320 * 240; i++)
 			{
 				depthData[i] = (short)(KinectSensor.Instance.getDepth()[i] >> 3);
 				colorArray[i].r = (byte)(depthData[i] / 32);
-				colorArray[i].g = (byte)(depthData[i] / 32);
-				colorArray[i].b = (byte)(depthData[i] / 32);
+				depthMin = Mathf.Min(depthMin, depthData[i] / 32f / 255f);
+				depthMax = Mathf.Max(depthMax, depthData[i] / 32f / 255f);
 			}
 
-			depthTexture.SetPixels32(colorArray);
-			depthTexture.Apply(false);
+			texture.SetPixels32(colorArray);
+			texture.Apply(false);
 		}
 	}
 }

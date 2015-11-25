@@ -3,13 +3,14 @@ using System.Collections;
 
 public class Tracer : MonoBehaviour {
 
+    public float treshold = 0.0f;
 	Texture2D texture;
 	Color[] colors;
     int textureWidth;
     int textureHeight;
-	int particleCount;
-    Texture2D depthTexture;
-    float treshold = 0.84f;
+	int pixelCount;
+    Depther depther;
+    bool shouldUpdate = false;
 
 	void Start () 
 	{
@@ -19,10 +20,10 @@ public class Tracer : MonoBehaviour {
 		texture = new Texture2D(textureWidth, textureHeight, TextureFormat.ARGB32,false);
 		GetComponent<Renderer>().material.mainTexture = texture;
 
-		particleCount = textureWidth * textureHeight;
-		colors = new Color[particleCount];
+		pixelCount = textureWidth * textureHeight;
+		colors = new Color[pixelCount];
         int i = 0;
-        while (i < particleCount) 
+        while (i < pixelCount) 
         {
         	colors[i] = new Color(0f, 0f, 0f, 1f);
             i++;
@@ -30,7 +31,9 @@ public class Tracer : MonoBehaviour {
 		texture.SetPixels(colors);
 		texture.Apply(false);
     
-        depthTexture = FindObjectOfType<Depther>().depthTexture;
+        depther = FindObjectOfType<Depther>();
+
+        shouldUpdate = depther != null && depther.texture != null;
 	}
 
     void Update ()
@@ -44,12 +47,12 @@ public class Tracer : MonoBehaviour {
 	
 	void LateUpdate () 
 	{
-		if (depthTexture)
+		if (shouldUpdate)
 		{
-	        Color[] heights = depthTexture.GetPixels();
+	        Color[] heights = depther.texture.GetPixels();
 	        colors = texture.GetPixels();
 	        int i = 0;
-	        while (i < particleCount) 
+	        while (i < pixelCount) 
 	        {
 	        	float height = 1f - heights[i].r;
 	        	bool isDepth = height != 1f;
