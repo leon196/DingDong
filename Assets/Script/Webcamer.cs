@@ -3,6 +3,7 @@ using System.Collections;
 
 public class Webcamer : MonoBehaviour 
 {
+	public float treshold = 0.1f;
 	WebCamTexture textureWebcam;
 	Texture2D textureDifference;
 	Color[] colorArray;
@@ -39,6 +40,11 @@ public class Webcamer : MonoBehaviour
 
 	void Update ()
 	{
+		if (Input.GetKey(KeyCode.UpArrow)) {
+			treshold = Mathf.Clamp(treshold + 0.001f, 0f, 1f);
+		} else if (Input.GetKey(KeyCode.DownArrow)) { 
+			treshold = Mathf.Clamp(treshold - 0.001f, 0f, 1f);
+		}
 		Color[] colorPixelArray = textureWebcam.GetPixels();
 		for (int i = 0; i < colorArray.Length; ++i) {
 			Color currentColor = colorArray[i];
@@ -49,8 +55,9 @@ public class Webcamer : MonoBehaviour
 			float lumNew = (newColor.r + newColor.g + newColor.b) / 3.0f;
 			float lumBuffer = (bufferColor.r + bufferColor.g + bufferColor.b) / 3.0f;
 			float lum = Mathf.Abs(lumNew - lumBuffer);
-			lum = lum < 0.1f ? lumCurrent * 0.95f : 1f;//Mathf.Max(currentColor.r, newColor.r - bufferColor.r);
-			colorArray[i] = new Color(lum, lum, lum, 1f);
+			// lum = lum < treshold ? lumCurrent * 0.95f : 1f;
+			// colorArray[i] = new Color(lum, lum, lum, 1f);
+			colorArray[i] = lum < treshold ? currentColor * 0.95f : newColor;
 			colorBufferArray[i] = newColor;
 		}
 		textureDifference.SetPixels(colorArray);
