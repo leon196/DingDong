@@ -55,9 +55,9 @@ public class Webcamer : MonoBehaviour
 			float lumNew = (newColor.r + newColor.g + newColor.b) / 3.0f;
 			float lumBuffer = (bufferColor.r + bufferColor.g + bufferColor.b) / 3.0f;
 			float lum = Mathf.Abs(lumNew - lumBuffer);
-			// lum = lum < treshold ? lumCurrent * 0.95f : 1f;
-			// colorArray[i] = new Color(lum, lum, lum, 1f);
-			colorArray[i] = lum < treshold ? currentColor * 0.95f : newColor;
+			lum = lum < treshold ? lumCurrent * 0.95f : 1f;
+			colorArray[i] = new Color(lum, lum, lum, 1f);
+			// colorArray[i] = lum < treshold ? currentColor * 0.99f : newColor;
 			colorBufferArray[i] = newColor;
 		}
 		textureDifference.SetPixels(colorArray);
