@@ -3,24 +3,29 @@ using System.Collections;
 
 public class Webcamer : MonoBehaviour 
 {
+	public string webcamName = "";
+	public Material material;
 	public float treshold = 0.1f;
 	WebCamTexture textureWebcam;
 	Texture2D textureDifference;
 	Color[] colorArray;
 	Color[] colorBufferArray;
 
-	void Start () 
+	void Awake () 
 	{
-		foreach (WebCamDevice device in WebCamTexture.devices) {
-			Debug.Log(device.name);
-		}
 		if (WebCamTexture.devices.Length > 0) {
+
+			foreach (WebCamDevice device in WebCamTexture.devices) {
+				webcamName = webcamName + device.name + '\n';
+			}
 
 			// Setup webcam texture
 			textureWebcam = new WebCamTexture();
-			GetComponent<Renderer>().material.mainTexture = textureWebcam;
 			Shader.SetGlobalTexture("_TextureWebcam", textureWebcam);
 			textureWebcam.Play();
+			if (material != null) {
+				material.mainTexture = textureWebcam;
+			}
 
 			// Setup color array
 			colorArray = new Color[textureWebcam.width * textureWebcam.height];
@@ -40,11 +45,6 @@ public class Webcamer : MonoBehaviour
 
 	void Update ()
 	{
-		if (Input.GetKey(KeyCode.UpArrow)) {
-			treshold = Mathf.Clamp(treshold + 0.001f, 0f, 1f);
-		} else if (Input.GetKey(KeyCode.DownArrow)) { 
-			treshold = Mathf.Clamp(treshold - 0.001f, 0f, 1f);
-		}
 		Color[] colorPixelArray = textureWebcam.GetPixels();
 		for (int i = 0; i < colorArray.Length; ++i) {
 			Color currentColor = colorArray[i];
