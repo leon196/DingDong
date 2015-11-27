@@ -38,15 +38,17 @@
 			}
 			
 			sampler2D _MainTex;
-			sampler2D _TextureWebcam;
+			// sampler2D _TextureWebcam;
 			sampler2D _TextureDifference;
+			sampler2D _TextureChoupichoup;
 
 			fixed4 frag (v2f i) : SV_Target
 			{
 				float2 uv = i.uv;
-				half4 frame = tex2D(_TextureWebcam, uv);
-				half4 buffer = tex2D(_TextureDifference, uv);
-				half4 color = buffer;
+				// half4 webcam = tex2D(_TextureWebcam, uv);
+				half4 difference = tex2D(_TextureDifference, uv);
+				half4 choupichoup = tex2D(_TextureChoupichoup, uv);
+				half4 color = max(difference, choupichoup);
 				return color;
 			}
 			ENDCG

@@ -5,14 +5,19 @@ public class Webcamer : MonoBehaviour
 {
 	public string webcamName = "";
 	public Material material;
-	public float treshold = 0.1f;
-	WebCamTexture textureWebcam;
-	Texture2D textureDifference;
+	public float treshold = 0.3f;
+	public float fadeOutRatio = 0.95f;
+	public WebCamTexture textureWebcam;
+	public Texture2D textureDifference;
+	public Texture2D textureCollider;
 	Color[] colorArray;
 	Color[] colorBufferArray;
+	Main main;
 
 	void Awake () 
 	{
+		main = GetComponent<Main>();
+
 		if (WebCamTexture.devices.Length > 0) {
 
 			foreach (WebCamDevice device in WebCamTexture.devices) {
@@ -46,6 +51,7 @@ public class Webcamer : MonoBehaviour
 	void Update ()
 	{
 		Color[] colorPixelArray = textureWebcam.GetPixels();
+		Color[] colorColliderArray = textureCollider.GetPixels();
 		for (int i = 0; i < colorArray.Length; ++i) {
 			Color currentColor = colorArray[i];
 			Color newColor = colorPixelArray[i];
@@ -55,9 +61,18 @@ public class Webcamer : MonoBehaviour
 			float lumNew = (newColor.r + newColor.g + newColor.b) / 3.0f;
 			float lumBuffer = (bufferColor.r + bufferColor.g + bufferColor.b) / 3.0f;
 			float lum = Mathf.Abs(lumNew - lumBuffer);
-			lum = lum < treshold ? lumCurrent * 0.95f : 1f;
+
+			if (lum < treshold) {
+				lum = lumCurrent * fadeOutRatio;
+			} else {
+				lum = 1f;
+				Color colliderColor = colorColliderArray[i];
+				if (colliderColor != Color.black) {
+					main.WebcamCollision();
+				}
+			}
+
 			colorArray[i] = new Color(lum, lum, lum, 1f);
-			// colorArray[i] = lum < treshold ? currentColor * 0.99f : newColor;
 			colorBufferArray[i] = newColor;
 		}
 		textureDifference.SetPixels(colorArray);
