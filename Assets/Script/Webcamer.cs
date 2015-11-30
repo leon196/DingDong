@@ -14,7 +14,7 @@ public class Webcamer : MonoBehaviour
 	Color[] colorBufferArray;
 	Main main;
 
-	void Awake () 
+	public void Setup () 
 	{
 		main = GetComponent<Main>();
 
@@ -50,32 +50,34 @@ public class Webcamer : MonoBehaviour
 
 	void Update ()
 	{
-		Color[] colorPixelArray = textureWebcam.GetPixels();
-		Color[] colorColliderArray = textureCollider.GetPixels();
-		for (int i = 0; i < colorArray.Length; ++i) {
-			Color currentColor = colorArray[i];
-			Color newColor = colorPixelArray[i];
-			Color bufferColor = colorBufferArray[i];
-			// currentColor.r *= 0.99f;
-			float lumCurrent = (currentColor.r + currentColor.g + currentColor.b) / 3.0f;
-			float lumNew = (newColor.r + newColor.g + newColor.b) / 3.0f;
-			float lumBuffer = (bufferColor.r + bufferColor.g + bufferColor.b) / 3.0f;
-			float lum = Mathf.Abs(lumNew - lumBuffer);
+		if (textureWebcam) {
+			Color[] colorPixelArray = textureWebcam.GetPixels();
+			// Color[] colorColliderArray = textureCollider.GetPixels();
+			for (int i = 0; i < colorArray.Length; ++i) {
+				Color currentColor = colorArray[i];
+				Color newColor = colorPixelArray[i];
+				Color bufferColor = colorBufferArray[i];
+				// currentColor.r *= 0.99f;
+				float lumCurrent = (currentColor.r + currentColor.g + currentColor.b) / 3.0f;
+				float lumNew = (newColor.r + newColor.g + newColor.b) / 3.0f;
+				float lumBuffer = (bufferColor.r + bufferColor.g + bufferColor.b) / 3.0f;
+				float lum = Mathf.Abs(lumNew - lumBuffer);
 
-			if (lum < treshold) {
-				lum = lumCurrent * fadeOutRatio;
-			} else {
-				lum = 1f;
-				Color colliderColor = colorColliderArray[i];
-				if (colliderColor != Color.black) {
-					main.WebcamCollision();
+				if (lum < treshold) {
+					lum = lumCurrent * fadeOutRatio;
+				} else {
+					lum = 1f;
+					// Color colliderColor = colorColliderArray[i];
+					// if (colliderColor != Color.black) {
+					// 	main.WebcamCollision();
+					// }
 				}
-			}
 
-			colorArray[i] = new Color(lum, lum, lum, 1f);
-			colorBufferArray[i] = newColor;
+				colorArray[i] = new Color(lum, lum, lum, 1f);
+				colorBufferArray[i] = newColor;
+			}
+			textureDifference.SetPixels(colorArray);
+			textureDifference.Apply(false);
 		}
-		textureDifference.SetPixels(colorArray);
-		textureDifference.Apply(false);
 	}
 }
