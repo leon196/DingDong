@@ -2,10 +2,11 @@ using UnityEngine;
 using System.Collections;
 
 [RequireComponent (typeof (Camera))]
-public class FrameBuffer : MonoBehaviour
+public class FrameBufferTriple : MonoBehaviour
 {
 	public string textureName = "_FrameBuffer";
 	public float pixelSize = 1f;
+	int depth = 3;
 	Camera cameraCapture;
 	int currentTexture;
 	RenderTexture[] textures;
@@ -13,7 +14,7 @@ public class FrameBuffer : MonoBehaviour
 	void Start ()
 	{
 		currentTexture = 0;
-		textures = new RenderTexture[2];
+		textures = new RenderTexture[depth];
 		CreateTextures();
 		cameraCapture = GetComponent<Camera>();
 	}
@@ -21,18 +22,24 @@ public class FrameBuffer : MonoBehaviour
 	void Update ()
 	{
 		Shader.SetGlobalTexture(textureName, GetCurrentTexture());
+		Shader.SetGlobalTexture(textureName + "Last", GetLastTexture());
 		NextTexture();
 		cameraCapture.targetTexture = GetCurrentTexture();
 	}
 
 	void NextTexture ()
 	{
-		currentTexture = (currentTexture + 1) % 2;
+		currentTexture = (currentTexture + 1) % depth;
 	}
 
 	RenderTexture GetCurrentTexture ()
 	{
 		return textures[currentTexture];
+	}
+
+	RenderTexture GetLastTexture ()
+	{
+		return textures[(currentTexture + 1) % depth];
 	}
 
 	void CreateTextures ()
