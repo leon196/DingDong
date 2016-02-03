@@ -3,62 +3,56 @@ using System.Collections;
 
 public class GameManager : MonoBehaviour 
 {
-	WebcamManager webcam;
-	// Choupichoup choupichoup;
-	GUIText[] labelArray;
+	MotionManager motion;
+
+	Vector2 respawnPosition;
+	float respawnSize = 0.1f;
+	float respawnTime = 0f;
+	float respawnDelay = 3f;
+
+	static public float width = 256f;
+	static public float height = 256f;
 
 	void Start () 
 	{
-		webcam = GetComponent<WebcamManager>();
+		motion = GameObject.FindObjectOfType<MotionManager>();
+		motion.collisionDelegate = Collision;
+
+		width = Mathf.Floor(width * Screen.width / Screen.height);
 		
-		// choupichoup = new Choupichoup(webcam.textureWebcam.width, webcam.textureWebcam.height);
-		// choupichoup.Spawn();
+		respawnPosition = Vector2.one * 0.5f;
+		respawnSize = Random.Range(0.05f, 0.1f);
+		motion.SetTarget(respawnPosition.x, respawnPosition.y, respawnSize);
 
-		// webcam.textureCollider = choupichoup.texture;
-		labelArray = GetComponentsInChildren<GUIText>();
-		foreach (GUIText label in labelArray) {
-			label.text = "";
-			// label.enabled = false;
+		motion.UpdateResolution();
+		Shader.SetGlobalVector("_Resolution", new Vector2(width, height));
+		FrameBuffer[] frameBufferArray = GameObject.FindObjectsOfType<FrameBuffer>();
+		foreach (FrameBuffer frameBuffer in frameBufferArray) {
+			frameBuffer.UpdateResolution();
 		}
-		UpdateText();
-
 	}
 	
 	void Update () 
 	{
-		// choupichoup.Update();
+		float ratio = Mathf.Clamp((Time.time - respawnTime) / respawnDelay, 0f, 1f);
+		SetTarget(respawnPosition, ratio * respawnSize);
+	}
 
-		// Toggle labels
-		if (Input.GetKeyDown(KeyCode.Space)) {
-			// foreach (GUIText label in labelArray) {
-			// 	label.enabled = !label.enabled;
-			// }
-		}
-
-		// Control choupichoup radius
-		if (Input.GetKeyDown(KeyCode.V)) {
-			// choupichoup.choup.radius = Mathf.Clamp(choupichoup.choup.radius - 1f, 0f, 100f);
-		} else if (Input.GetKeyDown(KeyCode.B)) { 
-			// choupichoup.choup.radius = Mathf.Clamp(choupichoup.choup.radius + 1f, 0f, 100f);
-		}
-
-		if (Input.anyKey) {
-			UpdateText();
+	public void Collision (float hitX, float hitY)
+	{
+		if (respawnTime + respawnDelay < Time.time) 
+		{
+			respawnTime = Time.time;
+			respawnPosition.x = Random.Range(0.25f, 0.75f);
+			respawnPosition.y = Random.Range(0.25f, 0.75f);
+			respawnSize = Random.Range(0.05f, 0.1f);
 		}
 	}
 
-	void UpdateText ()
+	public void SetTarget (Vector2 position, float size) 
 	{
-		foreach (GUIText label in labelArray) {
-			label.text = webcam.webcamName 
-				+ "luminance treshold (R/T) : " + webcam.treshold + '\n'
-				+ "fade out ratio (F/G) : " + webcam.fadeOutRatio + '\n';
-				// + "choupichoup radius (V/B) : " + choupichoup.choup.radius + '\n';
-		}
-	}
-
-	public void WebcamCollision ()
-	{
-		// choupichoup.Spawn();
+		motion.SetTarget(position.x, position.y, size);
+		Shader.SetGlobalVector("_BonusPosition", position);
+		Shader.SetGlobalFloat("_BonusSize", size);
 	}
 }

@@ -5,63 +5,63 @@ using System.Collections;
 public class MotionManager : MonoBehaviour 
 {
 	FrameBuffer frameBuffer;
-	InterfaceManager interfaceManager;
 
 	Texture2D texture2D;
 	RenderTexture renderTexture;
-	Rect textureRect;
-
 	Color[] colorArray;
+	Rect rect;
+
 	Vector2 target;
 	Vector2 position;
 	float distanceTreshold;
 
+  public delegate void CollisionDelegate (float x, float y);
+  public CollisionDelegate collisionDelegate;
+
 	void Start ()
 	{
-		interfaceManager = GameObject.FindObjectOfType<InterfaceManager>();
 		frameBuffer = GetComponent<FrameBuffer>();
 		renderTexture = frameBuffer.GetCurrentTexture();
 
-		textureRect = new Rect(0f, 0f, (float)renderTexture.width, (float)renderTexture.height);
-		texture2D = new Texture2D((int)textureRect.width, (int)textureRect.height);
-		colorArray = new Color[(int)textureRect.width * (int)textureRect.height];
-		Shader.SetGlobalTexture("_TestTexture", texture2D);	
+		rect = new Rect(0f, 0f, GameManager.width, GameManager.height);
+		texture2D = new Texture2D((int)GameManager.width, (int)GameManager.height);
+		colorArray = new Color[(int)GameManager.width * (int)GameManager.height];
 
 		position = Vector2.zero;
-
-		target = Vector2.one * 0.5f;
-		target.x *= textureRect.width;
-		target.y *= textureRect.height;
-		distanceTreshold = 0.1f * textureRect.height;
 	}
 
 	void Update () 
 	{
 		renderTexture = frameBuffer.GetCurrentTexture();
 		RenderTexture.active = renderTexture;
-		texture2D.ReadPixels(textureRect, 0, 0, false);
+		texture2D.ReadPixels(rect, 0, 0, false);
 		texture2D.Apply(false);
 
-		bool hit = false;
-		int index = 0;
+		position = Vector2.zero;
 
 		colorArray = texture2D.GetPixels();
-		position = Vector2.zero;
-		int r = Random.Range(0, colorArray.Length);
+		int index = 0;
 		foreach (Color color in colorArray) {
-			position.x = (index % textureRect.width);
-			position.y = Mathf.Floor(index / textureRect.width);
+			position.x = (index % GameManager.width);
+			position.y = Mathf.Floor(index / GameManager.width);
 			if (color.r == 1f && Vector2.Distance(position, target) < distanceTreshold) {
-				hit = true;
+				collisionDelegate(position.x, position.y);
 				break;
 			}
 			++index;
 		}
+	}
 
-		if (hit) {
-			interfaceManager.EnableCircle();
-		} else {
-			interfaceManager.DisableCircle();
-		}
+	public void UpdateResolution ()
+	{
+		rect = new Rect(0f, 0f, GameManager.width, GameManager.height);
+		texture2D = new Texture2D((int)GameManager.width, (int)GameManager.height);
+		colorArray = new Color[(int)GameManager.width * (int)GameManager.height];
+	}
+
+	public void SetTarget (float x, float y, float size) 
+	{
+		target = new Vector2(x * GameManager.width, y * GameManager.height);
+		distanceTreshold = size * GameManager.height;
 	}
 }

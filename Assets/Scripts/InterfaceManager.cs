@@ -3,28 +3,40 @@ using System.Collections;
 
 public class InterfaceManager : MonoBehaviour 
 {
-	public GameObject circle;
-	Transform target;
-	Vector3 position;
-	Material material;
+	WebcamManager webcam;
+	TextMesh textMesh;
+	Renderer textMeshRender;
 
 	void Start () 
 	{
-		target = circle.transform;
-		target.localPosition = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f)).direction;
-		target.localScale = Vector3.one * 0.1f;
+		webcam = GameObject.FindObjectOfType<WebcamManager>();
 
-		material = circle.GetComponent<Renderer>().material;
-
+		textMesh = GetComponentInChildren<TextMesh>();
+		textMesh.text = "";
+		UpdateText();
+		textMeshRender = textMesh.GetComponent<Renderer>();
+		textMeshRender.enabled = false;
+		Shader.SetGlobalFloat("_LightRatio", textMeshRender.enabled ? 0.5f : 1f);
 	}
 
-	public void EnableCircle ()
+	void Update ()
 	{
-		material.color = Color.red;
+		// Toggle labels
+		if (Input.GetKeyDown(KeyCode.Space)) {
+			textMeshRender.enabled = !textMeshRender.enabled;
+			Shader.SetGlobalFloat("_LightRatio", textMeshRender.enabled ? 0.5f : 1f);
+		}
+
+		if (Input.anyKey) {
+			UpdateText();
+		}
 	}
 
-	public void DisableCircle ()
+	void UpdateText ()
 	{
-		material.color = Color.yellow;
+		textMesh.text = "Ding Dong Debug" + '\n'
+			+ "Camera name : " + webcam.webcamName
+			+ "luminance treshold (R/T) : " + webcam.treshold + '\n'
+			+ "fade out ratio (F/G) : " + webcam.fadeOutRatio + '\n';
 	}
 }
