@@ -25,10 +25,10 @@
 			{
 				fixed4 color = tex2D(_MotionTexture, i.uv);
 
-				float2 position = _BonusPosition - i.uv;
-				position.x *= _Resolution.x / _Resolution.y;
-				float circle = step(length(position), _BonusSize);
-				color.r = min(1., color.r + circle);
+				// float2 position = _BonusPosition - i.uv;
+				// position.x *= _Resolution.x / _Resolution.y;
+				// float circle = step(length(position), _BonusSize);
+				// color.r = min(1., color.r + circle);
 
 				color.rgb *= _LightRatio;
 

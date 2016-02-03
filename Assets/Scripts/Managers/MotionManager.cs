@@ -44,7 +44,7 @@ public class MotionManager : MonoBehaviour
 		foreach (Color color in colorArray) {
 			position.x = (index % GameManager.width);
 			position.y = Mathf.Floor(index / GameManager.width);
-			if (color.r == 1f && Vector2.Distance(position, target) < distanceTreshold) {
+			if (color.r + color.g + color.b == 3f && Vector2.Distance(position, target) < distanceTreshold) {
 				collisionDelegate(position.x, position.y);
 				break;
 			}
