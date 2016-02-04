@@ -14,7 +14,7 @@
 			sampler2D _WebcamTexture;
 			sampler2D _WebcamTextureLast;
 			sampler2D _MotionTexture;
-			sampler2D _PostProcessTexture;
+			sampler2D _GUITexture;
 
 			float _LightRatio;
 			float2 _Resolution;
@@ -23,16 +23,12 @@
 
 			fixed4 frag (v2f_img i) : SV_Target 
 			{
-				fixed4 color = tex2D(_MotionTexture, i.uv);
+				fixed4 motion = tex2D(_MotionTexture, i.uv);
 
-				// float2 position = _BonusPosition - i.uv;
-				// position.x *= _Resolution.x / _Resolution.y;
-				// float circle = step(length(position), _BonusSize);
-				// color.r = min(1., color.r + circle);
+				motion.rgb *= _LightRatio;
 
-				color.rgb *= _LightRatio;
 
-				return color;
+				return motion;
 			}
 			ENDCG
 		}

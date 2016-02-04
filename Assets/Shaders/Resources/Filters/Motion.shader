@@ -15,6 +15,7 @@
 			sampler2D _MotionTexture;
 			sampler2D _WebcamTexture;
 			sampler2D _WebcamTextureLast;
+			sampler2D _GUITexture;
 
 			float _TresholdMotion;
 			float _FadeOutRatio;
@@ -33,37 +34,43 @@
 			fixed4 frag (v2f_img i) : SV_Target 
 			{
 				fixed4 col = fixed4(1,1,1,1);
+				float2 uv = i.uv;
 				
+				// Bonus circle
 				float2 position = _BonusPosition - i.uv;
 				position.x *= _Resolution.x / _Resolution.y;
 				float circle = step(length(position), _BonusSize);
 				col.rgb = lerp(col.rgb, _BonusColor, circle);
 
-				float2 uv = i.uv;
-
-				// From position
+				// Splash origin vector
 				position = uv - _CollisionPosition;
 				uv -= normalize(position) * 0.01 * _SplashesRatio;
 
-				// Brush
+				// Brush vector
 				float angle = rand(position) * PI * 2.;
 				uv += float2(cos(angle), sin(angle)) * 0.002 * _SplashesRatio;
 
-				// River
+				// River vector
 				angle = Luminance(tex2D(_WebcamTexture, i.uv)) * PI * 2.;
 				uv += float2(cos(angle), sin(angle)) * 0.005 * _SplashesRatio;
 
-				float current = Luminance(tex2D(_WebcamTexture, uv));
-				float last = Luminance(tex2D(_WebcamTextureLast, uv));
-
+				// Cheap Motion Detection
 				float4 motion = fixed4(1,1,1,1);
-				motion.rgb *= step(_TresholdMotion, abs(current - last));
+				float3 current = tex2D(_WebcamTexture, uv).rgb;
+				float3 last = tex2D(_WebcamTextureLast, uv).rgb;
+				motion.rgb *= step(_TresholdMotion, abs(current.r - last.r) + abs(current.g - last.g) + abs(current.b - last.b));
 
+				// Ghost effect
 				float4 fadeOut = fixed4(1,1,1,1);
 				fadeOut.rgb = lerp(tex2D(_MotionTexture, uv).rgb, _BonusColor, circle);
 				fadeOut.rgb *= lerp(_FadeOutRatio, 1, _SplashesRatio);
 
+
+				fixed4 gui = tex2D(_GUITexture, i.uv);
+
 				col.rgb = lerp(fadeOut, motion, step(0.5, motion));
+
+				col.rgb = lerp(col.rgb, gui.rgb, gui.a);
 
 				return col;
 			}
