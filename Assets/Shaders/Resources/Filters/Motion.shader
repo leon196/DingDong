@@ -25,6 +25,7 @@
 			float _BonusSize;
 			float2 _BonusPosition;
 			float4 _BonusColor;
+			float4 _GUIColor;
 
 			// http://stackoverflow.com/questions/12964279/whats-the-origin-of-this-glsl-rand-one-liner
 			float rand (float2 co) {
@@ -35,6 +36,7 @@
 			{
 				fixed4 col = fixed4(1,1,1,1);
 				float2 uv = i.uv;
+				float t = _Time;
 				
 				// Bonus circle
 				float2 position = _BonusPosition - i.uv;
@@ -44,15 +46,17 @@
 
 				// Splash origin vector
 				position = uv - _CollisionPosition;
-				uv -= normalize(position) * 0.01 * _SplashesRatio;
+				float angle = atan2(position.y, position.x);// + t;
+				float variation = rand(float2(floor(angle * 32.) / 32., 0.));
+				uv -= float2(cos(angle), sin(angle)) * 0.02 * _SplashesRatio * variation;
 
 				// Brush vector
-				float angle = rand(position) * PI * 2.;
+				angle = rand(position) * PI * 2.;
 				uv += float2(cos(angle), sin(angle)) * 0.002 * _SplashesRatio;
 
 				// River vector
 				angle = Luminance(tex2D(_WebcamTexture, i.uv)) * PI * 2.;
-				uv += float2(cos(angle), sin(angle)) * 0.005 * _SplashesRatio;
+				uv += float2(cos(angle), sin(angle)) * 0.002 * _SplashesRatio;
 
 				// Cheap Motion Detection
 				float4 motion = fixed4(1,1,1,1);
@@ -63,14 +67,14 @@
 				// Ghost effect
 				float4 fadeOut = fixed4(1,1,1,1);
 				fadeOut.rgb = lerp(tex2D(_MotionTexture, uv).rgb, _BonusColor, circle);
-				fadeOut.rgb *= lerp(_FadeOutRatio, 1, _SplashesRatio);
+				fadeOut.rgb *= lerp(_FadeOutRatio, 0.98, _SplashesRatio);
 
-
-				fixed4 gui = tex2D(_GUITexture, i.uv);
-
+				// Layer Motion
 				col.rgb = lerp(fadeOut, motion, step(0.5, motion));
 
-				col.rgb = lerp(col.rgb, gui.rgb, gui.a);
+				// Layer GUI
+				fixed4 gui = tex2D(_GUITexture, i.uv);
+				col.rgb = lerp(col.rgb, _GUIColor, gui.a);
 
 				return col;
 			}

@@ -23,12 +23,19 @@
 
 			fixed4 frag (v2f_img i) : SV_Target 
 			{
-				fixed4 motion = tex2D(_MotionTexture, i.uv);
+				float2 uv = i.uv;
 
-				motion.rgb *= _LightRatio;
+				uv = lerp(uv, floor(uv * _Resolution) / _Resolution, step(_LightRatio, 0.0));
 
+				fixed4 color = tex2D(_MotionTexture, i.uv);
 
-				return motion;
+				color.rgb *= _LightRatio;
+
+				// Layer GUI
+				fixed4 gui = tex2D(_GUITexture, uv);
+				color.rgb = lerp(color.rgb, gui.rgb, gui.a);
+
+				return color;
 			}
 			ENDCG
 		}

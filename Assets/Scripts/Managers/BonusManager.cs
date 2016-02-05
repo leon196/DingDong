@@ -18,7 +18,6 @@ public class BonusManager : MonoBehaviour
 	[HideInInspector] public bool bonusHitted = false;
 	[HideInInspector] public bool bonusSplashed = false;
 	[HideInInspector] public bool bonusRespawned = false;
-	[HideInInspector] public bool bonusIdled = false;
 
 	void Start () 
 	{
@@ -36,6 +35,20 @@ public class BonusManager : MonoBehaviour
 		// Color
 		bonusColor = ColorHSV.GetRandomColor(Random.Range(0.0f, 360f), 1, 1);
 		Shader.SetGlobalColor("_BonusColor", bonusColor);
+	}
+
+	public void Respawn ()
+	{
+		bonusRatio = 0f;
+		bonusTime = Time.time;
+		bonusHitted = false;
+		bonusColor = ColorHSV.GetRandomColor(Random.Range(0.0f, 360f), 1, 1);
+		Shader.SetGlobalColor("_BonusColor", bonusColor);
+	}
+
+	public void Idle ()
+	{
+		bonusTime = Time.time;
 	}
 
 	public void UpdateSplash ()
@@ -59,15 +72,6 @@ public class BonusManager : MonoBehaviour
 		SetTarget(bonusPosition, bonusSize * (1f - bonusRatio));
 	}
 
-	public void Respawn ()
-	{
-		bonusRatio = 0f;
-		bonusTime = Time.time;
-		bonusHitted = false;
-		bonusColor = ColorHSV.GetRandomColor(Random.Range(0.0f, 360f), 1, 1);
-		Shader.SetGlobalColor("_BonusColor", bonusColor);
-	}
-
 	public void HitTest (float hitX, float hitY)
 	{
 		if (bonusHitted == false && bonusTime + bonusDelay < Time.time) 
@@ -82,12 +86,6 @@ public class BonusManager : MonoBehaviour
 			bonusHitted = true;
 			gui.SetColor(bonusColor);
 		}
-	}
-
-	public void Idle ()
-	{
-		bonusTime = Time.time;
-		bonusIdled = true;
 	}
 
 	public void SetTarget (Vector2 position, float size) 

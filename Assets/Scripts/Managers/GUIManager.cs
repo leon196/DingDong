@@ -3,14 +3,18 @@ using System.Collections;
 
 public class GUIManager : MonoBehaviour 
 {
-	public TextMesh comboMesh;
+	public TextMesh scoreMesh;
 	public TextMesh textMesh;
 	Renderer textMeshRender;
 	
 	WebcamManager webcam;
 	TimeManager time;
 
+	Color textColor;
+	Color textColorNext;
+	float textColorRatio = 0f;
 	float textSize;
+	float textColorHue = 0f;
 	float textSizeOver = 0.05f;
 
 	void Start () 
@@ -18,22 +22,38 @@ public class GUIManager : MonoBehaviour
 		webcam = GameObject.FindObjectOfType<WebcamManager>();
 		time = GameObject.FindObjectOfType<TimeManager>();
 		textMeshRender = textMesh.GetComponent<Renderer>();
-
-		textSize = comboMesh.characterSize;
 		Shader.SetGlobalFloat("_LightRatio", textMeshRender.enabled ? 0.5f : 1f);
+		SetColor(Color.white);
+
+		textSize = scoreMesh.characterSize;
+		textColor = scoreMesh.color;
+		textColorNext = ColorHSV.GetRandomColor(Random.Range(0.0f, 360f), 1, 1);
 		UpdateText();
+	}
+
+	public void UpdateCooldownSize ()
+	{
+		scoreMesh.characterSize = Mathf.Lerp(scoreMesh.characterSize, textSize * time.cooldownRatio, Time.deltaTime * 4f);
+	}
+
+	public void UpdateScore ()
+	{
+		float ratio = Mathf.Sin((1f - time.cooldownRatio) * Mathf.PI);
+		scoreMesh.characterSize = Mathf.Lerp(0f, textSizeOver, ratio);
+
+		textColorRatio = textColorRatio + Time.deltaTime * 2f;
+		SetColor(Color.Lerp(textColor, textColorNext, Mathf.Clamp(textColorRatio, 0f, 1f)));
+
+		if (textColorRatio > 1f) {
+			textColorRatio = 0f;
+			textColor = textColorNext;
+			textColorHue = (textColorHue + 30f) % 360f;
+			textColorNext = ColorHSV.GetRandomColor(textColorHue, 1, 1);
+		}
 	}
 
 	void Update ()
 	{
-		if (time.cooldownOver) {
-			float size = Mathf.Min(comboMesh.characterSize + Time.deltaTime * 4f, textSizeOver);
-			comboMesh.characterSize = Mathf.Lerp(comboMesh.characterSize, size, Time.deltaTime * 4f);
-
-		} else {
-			comboMesh.characterSize = Mathf.Lerp(comboMesh.characterSize, textSize * time.cooldownRatio, Time.deltaTime * 4f);
-		}
-
 		// Toggle labels
 		if (Input.GetKeyDown(KeyCode.Space)) {
 			textMeshRender.enabled = !textMeshRender.enabled;
@@ -56,27 +76,28 @@ public class GUIManager : MonoBehaviour
 
 	public void SetColor (Color color)
 	{
-		comboMesh.color = color;
+		Shader.SetGlobalColor("_GUIColor", color);
+		textColor = color;
 	}
 
-	public void SetCombo (float combo)
+	public void SetScore (float score)
 	{
-		comboMesh.text = "x" + combo;
+		scoreMesh.text = "x" + score;
 	}
 
-	public void CenterCombo ()
+	public void CenterScore ()
 	{
-		Vector3 position = comboMesh.transform.position;
+		Vector3 position = scoreMesh.transform.position;
 		position.y = 0f;
-		comboMesh.transform.position = position;
-		comboMesh.anchor = TextAnchor.MiddleCenter;
+		scoreMesh.transform.position = position;
+		scoreMesh.anchor = TextAnchor.MiddleCenter;
 	}
 
-	public void SnapCombo ()
+	public void SnapScore ()
 	{
-		Vector3 position = comboMesh.transform.position;
+		Vector3 position = scoreMesh.transform.position;
 		position.y = -1f;
-		comboMesh.transform.position = position;
-		comboMesh.anchor = TextAnchor.LowerCenter;
+		scoreMesh.transform.position = position;
+		scoreMesh.anchor = TextAnchor.LowerCenter;
 	}
 }

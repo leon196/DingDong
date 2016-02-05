@@ -3,9 +3,9 @@ using System.Collections;
 
 public class TimeManager : MonoBehaviour 
 {
-	[HideInInspector] public float cooldownDelay = 5f;
-	[HideInInspector] public float cooldownRatio = 1f;
-	[HideInInspector] public bool cooldownOver = false;
+	public float cooldownDelay = 5f;
+	public float cooldownRatio = 1f;
+	public bool cooldownOver = false;
 
 	void Update () 
 	{
@@ -17,9 +17,10 @@ public class TimeManager : MonoBehaviour
 		}
 	}
 
-	public void StartCooldown ()
+	public void StartCooldown (float delay = 5f)
 	{
 		cooldownRatio = 1f;
+		cooldownDelay = delay;
 	}
 
 	public void UpdateCooldown ()
