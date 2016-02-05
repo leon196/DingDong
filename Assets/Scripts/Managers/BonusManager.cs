@@ -10,10 +10,14 @@ public class BonusManager : MonoBehaviour
 	Vector2 bonusPosition;
 	Vector2 splashesPosition;
 
-	float bonusSize = 0.1f;
-	float bonusTime = 0f;
-	float bonusDelay = 1f;
+	public float bonusSize = 0.1f;
+	public float minX = 0.25f;
+	public float maxX = 0.75f;
+	public float minY = 0.25f;
+	public float maxY = 0.75f;
+	float bonusDelay = 0.5f;
 	float bonusRatio = 0f;
+	float bonusTime = 0f;
 	
 	[HideInInspector] public bool bonusHitted = false;
 	[HideInInspector] public bool bonusSplashed = false;
@@ -29,12 +33,57 @@ public class BonusManager : MonoBehaviour
 		splashesPosition = bonusPosition;
 
 		// Size
-		bonusSize = Random.Range(0.05f, 0.1f);
 		motion.SetTarget(bonusPosition.x, bonusPosition.y, bonusSize);
 
 		// Color
 		bonusColor = ColorHSV.GetRandomColor(Random.Range(0.0f, 360f), 1, 1);
 		Shader.SetGlobalColor("_BonusColor", bonusColor);
+		
+		Shader.SetGlobalFloat("_MinX", minX);
+		Shader.SetGlobalFloat("_MaxX", maxX);
+		Shader.SetGlobalFloat("_MinY", minY);
+		Shader.SetGlobalFloat("_MaxY", maxY);
+	}
+
+	void Update ()
+	{
+		if (Input.GetKey(KeyCode.KeypadPlus)) {
+			bonusSize = Mathf.Clamp(bonusSize + Time.deltaTime * 0.1f, 0.01f, 1f);
+			
+		} else if (Input.GetKey(KeyCode.KeypadMinus)) {
+			bonusSize = Mathf.Clamp(bonusSize - Time.deltaTime * 0.1f, 0.01f, 1f);
+
+		} else if (Input.GetKey(KeyCode.Keypad1)) {
+			minX = Mathf.Clamp(minX - Time.deltaTime * 0.1f, 0f, 1f);
+
+		} else if (Input.GetKey(KeyCode.Keypad2)) {
+			minX = Mathf.Clamp(minX + Time.deltaTime * 0.1f, 0f, 1f);
+			
+		} else if (Input.GetKey(KeyCode.Keypad8)) {
+			maxX = Mathf.Clamp(maxX - Time.deltaTime * 0.1f, 0f, 1f);
+
+		} else if (Input.GetKey(KeyCode.Keypad9)) {
+			maxX = Mathf.Clamp(maxX + Time.deltaTime * 0.1f, 0f, 1f);
+
+		} else if (Input.GetKey(KeyCode.Keypad3)) {
+			minY = Mathf.Clamp(minY - Time.deltaTime * 0.1f, 0f, 1f);
+
+		} else if (Input.GetKey(KeyCode.Keypad6)) {
+			minY = Mathf.Clamp(minY + Time.deltaTime * 0.1f, 0f, 1f);
+
+		} else if (Input.GetKey(KeyCode.Keypad4)) {
+			maxY = Mathf.Clamp(maxY - Time.deltaTime * 0.1f, 0f, 1f);
+
+		} else if (Input.GetKey(KeyCode.Keypad7)) {
+			maxY = Mathf.Clamp(maxY + Time.deltaTime * 0.1f, 0f, 1f);
+		}
+
+		if (Input.anyKey) {
+			Shader.SetGlobalFloat("_MinX", minX);
+			Shader.SetGlobalFloat("_MaxX", maxX);
+			Shader.SetGlobalFloat("_MinY", minY);
+			Shader.SetGlobalFloat("_MaxY", maxY);
+		}
 	}
 
 	public void Respawn ()
@@ -80,9 +129,8 @@ public class BonusManager : MonoBehaviour
 			splashesPosition.x = bonusPosition.x;
 			splashesPosition.y = bonusPosition.y;
 			Shader.SetGlobalVector("_CollisionPosition", splashesPosition);
-			bonusPosition.x = Random.Range(0.25f, 0.75f);
-			bonusPosition.y = Random.Range(0.25f, 0.75f);
-			bonusSize = Random.Range(0.01f, 0.03f);
+			bonusPosition.x = Random.Range(minX, maxX);
+			bonusPosition.y = Random.Range(minY, maxY);
 			bonusHitted = true;
 			gui.SetColor(bonusColor);
 		}

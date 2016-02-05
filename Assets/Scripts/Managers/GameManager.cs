@@ -66,7 +66,7 @@ public class GameManager : MonoBehaviour
 						// Goto Score
 						if (time.cooldownOver) {
 							gameState = GameState.Scoring;
-							time.StartCooldown(currentScore);
+							time.StartCooldownScore(currentScore);
 							gui.CenterScore();
 							bonus.Idle();
 							Shader.SetGlobalFloat("_SplashesRatio", 1f);

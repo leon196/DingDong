@@ -4,7 +4,6 @@ using System.Collections;
 public class WebcamManager : MonoBehaviour 
 {
 	public string webcamName = "";
-	public Material material;
 	public float treshold = 0.1f;
 	public float fadeOutRatio = 0.95f;
 	WebCamTexture textureWebcam;
@@ -23,9 +22,6 @@ public class WebcamManager : MonoBehaviour
 			textureWebcam = new WebCamTexture();
 			Shader.SetGlobalTexture("_TextureWebcam", textureWebcam);
 			textureWebcam.Play();
-			if (material != null) {
-				material.mainTexture = textureWebcam;
-			}
 		}
 
 		UpdateUniforms();

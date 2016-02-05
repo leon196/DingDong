@@ -8,6 +8,7 @@ public class GUIManager : MonoBehaviour
 	Renderer textMeshRender;
 	
 	WebcamManager webcam;
+	BonusManager bonus;
 	TimeManager time;
 
 	Color textColor;
@@ -21,6 +22,7 @@ public class GUIManager : MonoBehaviour
 	{
 		webcam = GameObject.FindObjectOfType<WebcamManager>();
 		time = GameObject.FindObjectOfType<TimeManager>();
+		bonus = GameObject.FindObjectOfType<BonusManager>();
 		textMeshRender = textMesh.GetComponent<Renderer>();
 		Shader.SetGlobalFloat("_LightRatio", textMeshRender.enabled ? 0.5f : 1f);
 		SetColor(Color.white);
@@ -71,7 +73,8 @@ public class GUIManager : MonoBehaviour
 			+ "luminance treshold (Left / Right) : " + webcam.treshold + '\n'
 			+ "fade out ratio (Up / Down) : " + webcam.fadeOutRatio + '\n'
 			+ "mirror webcam (X / Y)" + '\n'
-			+ "cooldown delay (P / M) : " + time.cooldownDelay;
+			+ "cooldown delay (P / M) : " + time.cooldownDelay + '\n'
+			+ "bonus size (+ / -) : " + bonus.bonusSize;
 	}
 
 	public void SetColor (Color color)
