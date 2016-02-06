@@ -46,7 +46,7 @@
 				rect += step(_MinY, uv.y) * step(uv.y, _MinY + thinkness) * x;
 				rect += step(_MaxY, uv.y) * step(uv.y, _MaxY + thinkness) * x;
 				rect = clamp(rect, 0, 1);
-				color.rgb = lerp(color.rgb, float3(1,1,1), rect);
+				color.rgb = lerp(color.rgb, float3(1,1,1), rect * step(_LightRatio, 0.75));
 
 				// Layer GUI
 				fixed4 gui = tex2D(_GUITexture, uv);

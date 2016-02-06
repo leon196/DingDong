@@ -8,6 +8,7 @@
 			CGPROGRAM
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.0
 			#include "UnityCG.cginc"
 			#define PI 3.1415926535897
 			

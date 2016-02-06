@@ -3,7 +3,6 @@ using System.Collections;
 
 public class BonusManager : MonoBehaviour 
 {
-	GameManager game;
 	MotionManager motion;
 	GUIManager gui;
 
@@ -27,7 +26,6 @@ public class BonusManager : MonoBehaviour
 
 	void Start () 
 	{
-		game = GameObject.FindObjectOfType<GameManager>();
 		motion = GameObject.FindObjectOfType<MotionManager>();
 		gui = GameObject.FindObjectOfType<GUIManager>();
 
