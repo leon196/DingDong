@@ -93,6 +93,7 @@ public class GameManager : MonoBehaviour
 					time.StartCooldown();
 					time.UpdateCooldown();
 					gui.SnapScore();
+					bonus.Reset();
 					Shader.SetGlobalFloat("_SplashesRatio", 0f);
 				}
 
