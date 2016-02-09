@@ -16,8 +16,6 @@ public class WebcamManager : MonoBehaviour
 				webcamName = webcamName + device.name + '\n';
 			}
 
-			Debug.Log(webcamName);
-
 			// Setup webcam texture
 			textureWebcam = new WebCamTexture();
 			Shader.SetGlobalTexture("_TextureWebcam", textureWebcam);

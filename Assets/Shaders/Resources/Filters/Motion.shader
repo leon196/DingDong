@@ -48,8 +48,8 @@
 				// Splash origin vector
 				position = uv - _CollisionPosition;
 				float angle = atan2(position.y, position.x);// + t;
-				float variation = rand(float2(floor(angle * 32.) / 32., 0.));
-				uv -= float2(cos(angle), sin(angle)) * 0.02 * _SplashesRatio * variation;
+				float variation = rand(float2(floor(angle * 128.) / 128., 0.));
+				uv -= float2(cos(angle), sin(angle)) * 0.01 * _SplashesRatio * variation;
 
 				// Brush vector
 				angle = rand(position) * PI * 2.;

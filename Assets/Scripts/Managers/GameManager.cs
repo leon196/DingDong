@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
 	BonusManager bonus;
 	TimeManager time;
 	GUIManager gui;
+	DrawLine drawLine;
 
 	public AudioClip clipCollision;
 	public AudioClip clipGameOver;
@@ -17,6 +18,8 @@ public class GameManager : MonoBehaviour
 	public enum GameState { Playing, Scoring };
 	GameState gameState = GameState.Playing;
 
+	bool gameIsWithMalus = true;
+
 	float currentScore = 0f;
 
 	void Start () 
@@ -25,12 +28,14 @@ public class GameManager : MonoBehaviour
 		time = GameObject.FindObjectOfType<TimeManager>();
 		gui = GameObject.FindObjectOfType<GUIManager>();
 		motion = GameObject.FindObjectOfType<MotionManager>();
+		drawLine = GameObject.FindObjectOfType<DrawLine>();
 		motion.collisionDelegate = Collision;
 		
 		UpdateResolution();
 		gui.SetScore(currentScore);
 
 		Shader.SetGlobalFloat("_SplashesRatio", 0f);
+		drawLine.AddGrid("grid", 8, 8);
 	}
 	
 	void Update () 

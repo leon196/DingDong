@@ -5,17 +5,15 @@ public class BonusManager : MonoBehaviour
 {
 	MotionManager motion;
 	GUIManager gui;
+	DrawLine drawLine;
 
 	Color bonusColor;
 	Vector2 bonusPosition;
 	Vector2 splashesPosition;
 
 	public float bonusSize = 0.1f;
-	public float minX = 0.25f;
-	public float maxX = 0.75f;
-	public float minY = 0.25f;
-	public float maxY = 0.75f;
-	float bonusDelay = 0.5f;
+	public Rect spawnRect;  
+	float bonusDelay = 1f;
 	float bonusRatio = 0f;
 	float bonusTime = 0f;
 	float bonusSizeInit;
@@ -28,6 +26,7 @@ public class BonusManager : MonoBehaviour
 	{
 		motion = GameObject.FindObjectOfType<MotionManager>();
 		gui = GameObject.FindObjectOfType<GUIManager>();
+		drawLine = GameObject.FindObjectOfType<DrawLine>();
 
 		// Position
 		bonusPosition = Vector2.one * 0.5f;
@@ -37,11 +36,14 @@ public class BonusManager : MonoBehaviour
 		motion.SetTarget(bonusPosition.x, bonusPosition.y, bonusSize);
 		bonusSizeInit = bonusSize;
 
+		// Spawn
+		spawnRect = new Rect(0.25f, 0.25f, 0.5f, 0.5f);
+
 		// Color
 		bonusColor = ColorHSV.GetRandomColor(Random.Range(0.0f, 360f), 1, 1);
 		Shader.SetGlobalColor("_BonusColor", bonusColor);
 
-		UpdateUniform();
+		drawLine.AddRectangle("spawnRect", spawnRect);
 	}
 
 	void Update ()
@@ -53,28 +55,20 @@ public class BonusManager : MonoBehaviour
 		} else if (Input.GetKey(KeyCode.KeypadMinus)) {
 			bonusSize = Mathf.Clamp(bonusSize - Time.deltaTime * 0.1f, 0.01f, 1f);
 			bonusSizeInit = bonusSize;
+		}
 
 		// Spawn rect
-		} else if (Input.GetKey(KeyCode.Keypad1)) {
-			minX = Mathf.Clamp(minX - Time.deltaTime * 0.1f, 0f, 1f);
-		} else if (Input.GetKey(KeyCode.Keypad2)) {
-			minX = Mathf.Clamp(minX + Time.deltaTime * 0.1f, 0f, 1f);
-		} else if (Input.GetKey(KeyCode.Keypad8)) {
-			maxX = Mathf.Clamp(maxX - Time.deltaTime * 0.1f, 0f, 1f);
-		} else if (Input.GetKey(KeyCode.Keypad9)) {
-			maxX = Mathf.Clamp(maxX + Time.deltaTime * 0.1f, 0f, 1f);
-		} else if (Input.GetKey(KeyCode.Keypad3)) {
-			minY = Mathf.Clamp(minY - Time.deltaTime * 0.1f, 0f, 1f);
-		} else if (Input.GetKey(KeyCode.Keypad6)) {
-			minY = Mathf.Clamp(minY + Time.deltaTime * 0.1f, 0f, 1f);
-		} else if (Input.GetKey(KeyCode.Keypad4)) {
-			maxY = Mathf.Clamp(maxY - Time.deltaTime * 0.1f, 0f, 1f);
-		} else if (Input.GetKey(KeyCode.Keypad7)) {
-			maxY = Mathf.Clamp(maxY + Time.deltaTime * 0.1f, 0f, 1f);
+		if (Input.GetMouseButtonDown(0)) {
+			spawnRect.xMin = Input.mousePosition.x / Screen.width;
+			spawnRect.yMin = Input.mousePosition.y / Screen.height;
+
+		} else if (Input.GetMouseButton(0)) {
+			spawnRect.xMax = Input.mousePosition.x / Screen.width;
+			spawnRect.yMax = Input.mousePosition.y / Screen.height;
 		}
 
 		if (Input.anyKey) {
-			UpdateUniform();
+			drawLine.UpdateRectangle("spawnRect", spawnRect);
 		}
 	}
 
@@ -126,8 +120,8 @@ public class BonusManager : MonoBehaviour
 			splashesPosition.x = bonusPosition.x;
 			splashesPosition.y = bonusPosition.y;
 			Shader.SetGlobalVector("_CollisionPosition", splashesPosition);
-			bonusPosition.x = Random.Range(minX, maxX);
-			bonusPosition.y = Random.Range(minY, maxY);
+			bonusPosition.x = Random.Range(spawnRect.x, spawnRect.xMax);
+			bonusPosition.y = Random.Range(spawnRect.y, spawnRect.yMax);
 			bonusHitted = true;
 			gui.SetColor(bonusColor);
 			bonusSize = Mathf.Clamp(bonusSize - 0.001f, 0.01f, 1f);
@@ -139,13 +133,5 @@ public class BonusManager : MonoBehaviour
 		motion.SetTarget(position.x, position.y, size);
 		Shader.SetGlobalVector("_BonusPosition", position);
 		Shader.SetGlobalFloat("_BonusSize", size);
-	}
-
-	public void UpdateUniform ()
-	{
-		Shader.SetGlobalFloat("_MinX", minX);
-		Shader.SetGlobalFloat("_MaxX", maxX);
-		Shader.SetGlobalFloat("_MinY", minY);
-		Shader.SetGlobalFloat("_MaxY", maxY);
 	}
 }
