@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
 
 		collectibleList = new List<Collectible>();
 
-		startButton = new Button();
+		startButton = new Button(new Vector2(0.5f, 0.25f));
 		AddCollectible(startButton);
 
 		UpdateResolution();
@@ -99,9 +99,7 @@ public class GameManager : MonoBehaviour
 
 	void SpawnBonus ()
 	{
-		Collectible collectible = new Collectible();
-		collectible.isBonus = true;
-		collectible.position = Grid.GetIndexPosition(Random.Range(0, Grid.width * Grid.height));
+		Collectible collectible = new Collectible(Grid.GetIndexPosition(Random.Range(0, Grid.width * Grid.height)));
 		AddCollectible(collectible);
 	}
 
@@ -118,6 +116,7 @@ public class GameManager : MonoBehaviour
 			case GameState.Title : 
 			{
 				startButton.Splash();
+				Shader.SetGlobalVector("_SplashPosition", startButton.position);
 				AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
 				break;
 			}

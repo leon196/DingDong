@@ -35,7 +35,7 @@ public class GUI : MonoBehaviour
 		materialGrid = new Material(Shader.Find("Hidden/Line"));
 
 		textSize = scoreMesh.characterSize;
-		textColor = scoreMesh.color;
+		textColor = Color.white;
 		textColorNext = ColorHSV.GetRandomColor();
 		colorAlpha = new Color(1f,1f,1f,0f);
 		UpdateText();
@@ -74,6 +74,16 @@ public class GUI : MonoBehaviour
 		if (Input.anyKey) {
 			UpdateText();
 		}
+
+		// textColorRatio = textColorRatio + Time.deltaTime;
+		// SetColor(Color.Lerp(textColor, textColorNext, Mathf.Clamp(textColorRatio, 0f, 1f)));
+
+		// if (textColorRatio > 1f) {
+		// 	textColorRatio = 0f;
+		// 	textColor = textColorNext;
+		// 	textColorHue = (textColorHue + 10f) % 360f;
+		// 	textColorNext = ColorHSV.GetColor(textColorHue, 1, 1);
+		// }
 	}
 
 	void UpdateText ()
@@ -110,8 +120,7 @@ public class GUI : MonoBehaviour
 
 	public void UpdateAlpha (float ratio)
 	{
-		textColor = Color.Lerp(colorAlpha, Color.white, ratio);
-		Shader.SetGlobalColor("_GUIColor", textColor);
+		Shader.SetGlobalColor("_GUIColor", Color.Lerp(colorAlpha, textColor, ratio));
 	}
 
 	public void SetScore (float score)

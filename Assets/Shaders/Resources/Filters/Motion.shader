@@ -17,6 +17,7 @@
 			sampler2D _WebcamTexture;
 			sampler2D _WebcamTextureLast;
 			sampler2D _GUITexture;
+			sampler2D _GameTexture;
 			
 			float4 _GUIColor;
 
@@ -62,9 +63,13 @@
 				// Layer Motion
 				col.rgb = lerp(fadeOut, motion, step(0.5, motion));
 
+				// Game collectible
+				fixed4 game = tex2D(_GameTexture, uv);
+				col.rgb = lerp(col.rgb, game.rgb, game.a);
+
 				// GUI
 				fixed4 gui = tex2D(_GUITexture, uv);
-				col.rgb = lerp(col.rgb, gui.rgb * _GUIColor.rgb, gui.a * _GUIColor.a);
+				col.rgb = lerp(col.rgb, gui.rgb * _GUIColor.rgb * 0.99, gui.a * _GUIColor.a);
 
 				return col;
 			}

@@ -139,6 +139,12 @@ class ColorHSV : System.Object
         return color;
     }
  
+    public static Color GetColor (float h, float s, float v)
+    {
+        ColorHSV col = new ColorHSV(h, s, v);
+        return col.ToColor();
+    }
+ 
     public static Color GetRandomColor ()
     {
         ColorHSV col = new ColorHSV(Random.Range(0.0f, 360f), 1f, 1f);

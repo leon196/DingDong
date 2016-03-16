@@ -4,6 +4,7 @@ using System.Collections;
 public class Collectible
 {
 	public Vector2 position;
+	public Vector2 screenPosition;
 	public Color color;
 	public float size;
 	public float collisionRadius;
@@ -15,14 +16,17 @@ public class Collectible
 
 	GameObject sprite;
 
-	public Collectible (Vector2 pos = new Vector2()) 
+	public Collectible (Vector2 pos) 
 	{
 		cooldownSpawn = new Cooldown();
 		cooldownSplash = new Cooldown();
 		position = pos;
+		screenPosition = new Vector2();
+		screenPosition.x = position.x * GameManager.width * Screen.width / (float)Screen.height;
+		screenPosition.y = position.y * GameManager.height;
 		color = ColorHSV.GetRandomColor();
 		size = Grid.cellSize * 2f;
-		collisionRadius = Grid.cellSize * GameManager.height;
+		collisionRadius = Grid.cellSize / 2f * GameManager.height;
 		isHitted = false;
 		isBonus = true;
 
@@ -61,7 +65,7 @@ public class Collectible
 	{
 		if (isHitted == false && cooldownSpawn.IsOver())
 		{
-			 return Vector2.Distance(position, pos) < collisionRadius;
+			 return Vector2.Distance(screenPosition, pos) < collisionRadius;
 		}
 		else
 		{
