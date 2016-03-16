@@ -9,12 +9,11 @@ public class Collectible
 	public float size;
 	public float collisionRadius;
 	public bool isHitted;
-	public bool isBonus;
 
 	public Cooldown cooldownSpawn;
 	public Cooldown cooldownSplash;
 
-	GameObject sprite;
+	protected GameObject sprite;
 
 	public Collectible (Vector2 pos) 
 	{
@@ -28,12 +27,11 @@ public class Collectible
 		size = Grid.cellSize * 2f;
 		collisionRadius = Grid.cellSize / 2f * GameManager.height;
 		isHitted = false;
-		isBonus = true;
 
 		AddSprite();
 	}
 
-	void AddSprite ()
+	public virtual void AddSprite ()
 	{
 		sprite = GameObject.CreatePrimitive(PrimitiveType.Quad);
 		
@@ -73,7 +71,7 @@ public class Collectible
 		}
 	}
 
-	public void Update ()
+	public virtual void Update ()
 	{
 		if (isHitted == false) 
 		{
@@ -85,6 +83,12 @@ public class Collectible
 			cooldownSplash.Update();
 			sprite.transform.localScale = Vector3.one * Mathf.Lerp(size, 0f, cooldownSplash.timeRatio);
 		}
+	}
+
+	public void UpdateSize (float newSize)
+	{
+		size = newSize * 2f;
+		collisionRadius = newSize / 2f * GameManager.height;
 	}
 
 	public bool SplashIsOver () 

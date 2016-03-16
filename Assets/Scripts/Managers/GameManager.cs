@@ -35,10 +35,12 @@ public class GameManager : MonoBehaviour
 			indexGridArray[i] = i;
 		}
 
+		UpdateResolution();
+
 		startButton = new Button(new Vector2(0.5f, 0.5f));
+		startButton.UpdateSize(0.3f);
 		AddCollectible(startButton);
 
-		UpdateResolution();
 		GotoTitle();
 	}
 
@@ -82,6 +84,7 @@ public class GameManager : MonoBehaviour
 
 				if (startButton.isHitted) {
 					Shader.SetGlobalFloat("_SplashRatio", 1f - startButton.cooldownSplash.timeRatio);
+					Shader.SetGlobalFloat("_ShowWebcam", 1f - startButton.cooldownSplash.timeRatio);
 				}
 
 				if (startButton.SplashIsOver()) {
@@ -111,7 +114,7 @@ public class GameManager : MonoBehaviour
 
 							// Win check
 							--currentBonusCount;
-							if (currentBonusCount == 0) 
+							if (currentBonusCount <= 0) 
 							{
 								currentBonusCount = Random.Range(1, 4);
 								SpawnBonus(currentBonusCount);
@@ -135,14 +138,13 @@ public class GameManager : MonoBehaviour
 		int index = 0;
 		indexGridArray = ArrayUtils.Shuffle<int>(indexGridArray);
 		for (int i = 0; i < bonusCount; ++i) {
-			Collectible collectible = new Collectible(Grid.GetIndexPosition(indexGridArray[index]));
-			collectible.Spawn();
-			AddCollectible(collectible);
+			Bonus bonus = new Bonus(Grid.GetIndexPosition(indexGridArray[index]));
+			bonus.Spawn();
+			AddCollectible(bonus);
 			++index;
 		}
 		for (int i = 0; i < malusCount; ++i) {
 			Collectible collectible = new Collectible(Grid.GetIndexPosition(indexGridArray[index]));
-			collectible.isBonus = false;
 			collectible.Spawn();
 			AddCollectible(collectible);
 			++index;
