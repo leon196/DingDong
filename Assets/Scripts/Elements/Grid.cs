@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 public class Grid
 {
-	static public int width = 8;
-	static public int height = 8;
-	static public float cellSize = 1f / 8f;
+	static public int width = 6;
+	static public int height = 6;
+	static public float cellSize = 1f / 6f;
 
 	static public Vector2 GetGridPosition (int index, int width, int height)
 	{

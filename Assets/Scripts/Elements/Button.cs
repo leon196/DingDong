@@ -3,13 +3,11 @@ using System.Collections;
 
 public class Button : Collectible
 {
-	Material spriteMaterial;
 	Color colorAlpha;
 
 	public Button (Vector2 pos) : base(pos)
 	{
 		color = Color.red;
-		spriteMaterial = sprite.GetComponent<Renderer>().material;
 		spriteMaterial.color = color;
 		colorAlpha = color;
 		colorAlpha.a = 0.5f;

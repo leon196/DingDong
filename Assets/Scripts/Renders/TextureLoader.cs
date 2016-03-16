@@ -8,6 +8,7 @@ public class TextureLoader
 	static Texture strawberry;
 	static Texture cake;
 	static Texture bomb;
+	static Texture skull;
 
 	static Texture[] bonusArray;
 
@@ -50,5 +51,11 @@ public class TextureLoader
 	{
 		if (bomb == null) { bomb = Resources.Load("unlit-bomb") as Texture; }
 		return bomb;
+	}
+
+	static public Texture GetSkull ()
+	{
+		if (skull == null) { skull = Resources.Load("surprised-skull") as Texture; }
+		return skull;
 	}
 }

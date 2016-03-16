@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class GameManager : MonoBehaviour 
+public class Game : MonoBehaviour 
 {
 	CollisionDetector collisionDetector;
 	GUI gui;
@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
 	static public float width = 256f;
 	static public float height = 256f;
 
-	public enum GameState { Title, Playing, Scoring };
+	public enum GameState { Title, Playing, Transition, Scoring };
 	GameState gameState = GameState.Title;
 
 	float currentScore = 0f;
@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
 	List<Collectible> collectibleList;
 	int[] indexGridArray;
 	Button startButton;
+	Cooldown cooldownTransition;
 
 	void Start () 
 	{
@@ -37,6 +38,8 @@ public class GameManager : MonoBehaviour
 
 		UpdateResolution();
 
+		cooldownTransition = new Cooldown(5f);
+
 		startButton = new Button(new Vector2(0.5f, 0.5f));
 		startButton.UpdateSize(0.3f);
 		AddCollectible(startButton);
@@ -47,7 +50,8 @@ public class GameManager : MonoBehaviour
 	void GotoTitle ()
 	{
 		gameState = GameState.Title;
-		gui.GotoTitle();
+		gui.Goto(gameState);
+		gui.UpdateAlpha(1f);
 		ClearCollectibleList();
 		startButton.Spawn();
 		collisionDetector.AddCollectible(startButton);
@@ -59,14 +63,39 @@ public class GameManager : MonoBehaviour
 	{
 		gameState = GameState.Playing;
 		currentScore = 0f;
-		gui.GotoGame();
+		gui.Goto(gameState);
 		gui.UpdateAlpha(1f);
 		gui.SetScore(currentScore);
 		ClearCollectibleList();
-		currentBonusCount = Random.Range(1, 4);
-		SpawnBonus(currentBonusCount);
+		currentBonusCount = 3;//Random.Range(1, 4);
+		SpawnBonus(3);
 		Shader.SetGlobalFloat("_SplashRatio", 0f);
 		Shader.SetGlobalFloat("_ShowWebcam", 0f);
+	}
+
+	void GotoTransition ()
+	{
+		gameState = GameState.Transition;
+		gui.Goto(gameState);
+		for (int i = 0; i < collectibleList.Count; ++i) 
+		{
+			Collectible collectible = collectibleList[i];
+			if (collectible.isHitted == false) {
+				collectible.Splash();
+			}
+		}
+		gui.SetRandomMessage();
+		cooldownTransition.Start();
+	}
+
+	void GotoNextRound ()
+	{
+		gameState = GameState.Playing;
+		gui.Goto(gameState);
+		gui.UpdateAlpha(1f);
+		ClearCollectibleList();
+		currentBonusCount = 10;
+		SpawnBonus(10, 5);
 	}
 	
 	void Update () 
@@ -83,8 +112,9 @@ public class GameManager : MonoBehaviour
 				startButton.Update();
 
 				if (startButton.isHitted) {
-					Shader.SetGlobalFloat("_SplashRatio", 1f - startButton.cooldownSplash.timeRatio);
-					Shader.SetGlobalFloat("_ShowWebcam", 1f - startButton.cooldownSplash.timeRatio);
+					float ratio = 1f - startButton.cooldownSplash.timeRatio;
+					Shader.SetGlobalFloat("_SplashRatio", ratio);
+					Shader.SetGlobalFloat("_ShowWebcam", ratio);
 				}
 
 				if (startButton.SplashIsOver()) {
@@ -116,11 +146,33 @@ public class GameManager : MonoBehaviour
 							--currentBonusCount;
 							if (currentBonusCount <= 0) 
 							{
-								currentBonusCount = Random.Range(1, 4);
-								SpawnBonus(currentBonusCount);
+								GotoTransition();
 							}
 						}
 					}
+				}
+
+				break;
+			}
+
+			// Transition 
+			case GameState.Transition : 
+			{
+				cooldownTransition.Update();
+
+				for (int i = 0; i < collectibleList.Count; ++i) 
+				{
+					Collectible collectible = collectibleList[i];
+					collectible.Update();
+				}
+
+				gui.UpdateRainbow();
+				float ratio = Mathf.Sin(cooldownTransition.timeRatio * Mathf.PI);
+				gui.UpdateMessage(ratio);
+				Shader.SetGlobalFloat("_SplashRatio", ratio);
+
+				if (cooldownTransition.IsOver()) {
+					GotoNextRound();
 				}
 
 				break;
@@ -144,9 +196,9 @@ public class GameManager : MonoBehaviour
 			++index;
 		}
 		for (int i = 0; i < malusCount; ++i) {
-			Collectible collectible = new Collectible(Grid.GetIndexPosition(indexGridArray[index]));
-			collectible.Spawn();
-			AddCollectible(collectible);
+			Malus malus = new Malus(Grid.GetIndexPosition(indexGridArray[index]));
+			malus.Spawn();
+			AddCollectible(malus);
 			++index;
 		}
 	}
@@ -182,10 +234,13 @@ public class GameManager : MonoBehaviour
 			}
 			case GameState.Playing : 
 			{
-				collectible.Splash();
-				gui.SetScore(++currentScore);
-				Shader.SetGlobalVector("_SplashPosition", collectible.position);
-				AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
+				if (collectible.GetType() == typeof(Bonus))
+				{
+					collectible.Splash();
+					gui.SetScore(++currentScore);
+					Shader.SetGlobalVector("_SplashPosition", collectible.position);
+					AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
+				}
 				break;
 			}
 		}

@@ -14,6 +14,7 @@ public class Collectible
 	public Cooldown cooldownSplash;
 
 	protected GameObject sprite;
+	protected Material spriteMaterial;
 
 	public Collectible (Vector2 pos) 
 	{
@@ -21,11 +22,11 @@ public class Collectible
 		cooldownSplash = new Cooldown();
 		position = pos;
 		screenPosition = new Vector2();
-		screenPosition.x = position.x * GameManager.width;
-		screenPosition.y = position.y * GameManager.height;
+		screenPosition.x = position.x * Game.width;
+		screenPosition.y = position.y * Game.height;
 		color = ColorHSV.GetRandomColor();
 		size = Grid.cellSize * 2f;
-		collisionRadius = Grid.cellSize / 2f * GameManager.height;
+		collisionRadius = Grid.cellSize / 2f * Game.height;
 		isHitted = false;
 
 		AddSprite();
@@ -39,6 +40,7 @@ public class Collectible
 		material.mainTexture = TextureLoader.GetCircle();
 		material.color = color;
 		sprite.GetComponent<Renderer>().material = material;
+		spriteMaterial = sprite.GetComponent<Renderer>().material;
 
 		Vector3 pos = sprite.transform.position;
 		pos.x = (position.x * 2f - 1f) * Screen.width / (float)Screen.height;
@@ -88,7 +90,7 @@ public class Collectible
 	public void UpdateSize (float newSize)
 	{
 		size = newSize * 2f;
-		collisionRadius = newSize / 2f * GameManager.height;
+		collisionRadius = newSize / 2f * Game.height;
 	}
 
 	public bool SplashIsOver () 

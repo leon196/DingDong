@@ -31,7 +31,7 @@ public class FrameBuffer : MonoBehaviour
 			if (textures[i]) {
 				textures[i].Release();
 			}
-			textures[i] = new RenderTexture((int)GameManager.width, (int)GameManager.height, 24, RenderTextureFormat.ARGB32);
+			textures[i] = new RenderTexture((int)Game.width, (int)Game.height, 24, RenderTextureFormat.ARGB32);
 			textures[i].Create();
 			textures[i].filterMode = FilterMode.Point;
 		}

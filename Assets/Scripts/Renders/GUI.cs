@@ -12,6 +12,7 @@ public class GUI : MonoBehaviour
 	public TextMesh titleMesh;
 	public TextMesh startMesh;
 	public TextMesh authorMesh;
+	public TextMesh messageMesh;
 
 	Color textColor;
 	Color textColorNext;
@@ -20,6 +21,10 @@ public class GUI : MonoBehaviour
 	float textSize;
 	float textColorHue = 0f;
 	float textSizeOver = 0.05f;
+
+	float messageMeshSize;
+	string[] messageArray = new string[] { "yeah!", "nice!", "great!", "awesome!", "omg!" };
+	int currentMessage = 0;
 
 	Material materialGrid;
 	bool shouldDrawGrid;
@@ -34,6 +39,10 @@ public class GUI : MonoBehaviour
 
 		materialGrid = new Material(Shader.Find("Hidden/Line"));
 
+		messageMeshSize = messageMesh.characterSize;
+		messageMesh.characterSize = 0f;
+		currentMessage = 0;
+
 		textSize = scoreMesh.characterSize;
 		textColor = Color.white;
 		textColorNext = ColorHSV.GetRandomColor();
@@ -46,20 +55,17 @@ public class GUI : MonoBehaviour
 		// scoreMesh.characterSize = Mathf.Lerp(scoreMesh.characterSize, textSize * time.cooldownRatio, Time.deltaTime * 4f);
 	}
 
-	public void UpdateScore ()
+	public void UpdateRainbow ()
 	{
-		// float ratio = Mathf.Sin((1f - time.cooldownRatio) * Mathf.PI);
-		// scoreMesh.characterSize = Mathf.Lerp(0f, textSizeOver, ratio);
+		textColorRatio = textColorRatio + Time.deltaTime * 2f;
+		SetColor(Color.Lerp(textColor, textColorNext, Mathf.Clamp(textColorRatio, 0f, 1f)));
 
-		// textColorRatio = textColorRatio + Time.deltaTime * 2f;
-		// SetColor(Color.Lerp(textColor, textColorNext, Mathf.Clamp(textColorRatio, 0f, 1f)));
-
-		// if (textColorRatio > 1f) {
-		// 	textColorRatio = 0f;
-		// 	textColor = textColorNext;
-		// 	textColorHue = (textColorHue + 30f) % 360f;
-		// 	textColorNext = ColorHSV.GetRandomColor(textColorHue, 1, 1);
-		// }
+		if (textColorRatio > 1f) {
+			textColorRatio = 0f;
+			textColor = textColorNext;
+			textColorHue = (textColorHue + 30f) % 360f;
+			textColorNext = ColorHSV.GetColor(textColorHue, 1, 1);
+		}
 	}
 
 	void Update ()
@@ -96,20 +102,34 @@ public class GUI : MonoBehaviour
 			// + "bonus size (+ / -) : " + bonus.bonusSize;
 	}
 
-	public void GotoTitle ()
+	public void Goto (Game.GameState gameState)
 	{
-		titleMesh.GetComponent<Renderer>().enabled = true;
-		startMesh.GetComponent<Renderer>().enabled = true;
-		scoreMesh.GetComponent<Renderer>().enabled = false;
-		authorMesh.GetComponent<Renderer>().enabled = true;
-	}
-
-	public void GotoGame ()
-	{
-		titleMesh.GetComponent<Renderer>().enabled = false;
-		startMesh.GetComponent<Renderer>().enabled = false;
-		scoreMesh.GetComponent<Renderer>().enabled = true;
-		authorMesh.GetComponent<Renderer>().enabled = false;
+		switch (gameState) {
+			case Game.GameState.Title : {
+				titleMesh.GetComponent<Renderer>().enabled = true;
+				startMesh.GetComponent<Renderer>().enabled = true;
+				scoreMesh.GetComponent<Renderer>().enabled = false;
+				messageMesh.GetComponent<Renderer>().enabled = false;
+				authorMesh.GetComponent<Renderer>().enabled = true;
+				break;
+			}
+			case Game.GameState.Playing : {
+				titleMesh.GetComponent<Renderer>().enabled = false;
+				startMesh.GetComponent<Renderer>().enabled = false;
+				scoreMesh.GetComponent<Renderer>().enabled = true;
+				messageMesh.GetComponent<Renderer>().enabled = false;
+				authorMesh.GetComponent<Renderer>().enabled = false;
+				break;
+			}
+			case Game.GameState.Transition : {
+				titleMesh.GetComponent<Renderer>().enabled = false;
+				startMesh.GetComponent<Renderer>().enabled = false;
+				scoreMesh.GetComponent<Renderer>().enabled = false;
+				messageMesh.GetComponent<Renderer>().enabled = true;
+				authorMesh.GetComponent<Renderer>().enabled = false;
+				break;
+			}
+		}
 	}
 
 	public void SetColor (Color color)
@@ -123,9 +143,24 @@ public class GUI : MonoBehaviour
 		Shader.SetGlobalColor("_GUIColor", Color.Lerp(colorAlpha, textColor, ratio));
 	}
 
+	public void SetRandomMessage ()
+	{
+		if (currentMessage == messageArray.Length) {
+			messageArray = ArrayUtils.Shuffle<string>(messageArray);
+			currentMessage = 0;
+		}
+		messageMesh.text = messageArray[currentMessage];
+		++currentMessage;
+	}
+
+	public void UpdateMessage (float ratio)
+	{
+		messageMesh.characterSize = Mathf.Lerp(0f, messageMeshSize, ratio);
+	}
+
 	public void SetScore (float score)
 	{
-		scoreMesh.text = "x" + score;
+		scoreMesh.text = "" + score;
 	}
 
 	public void CenterScore ()

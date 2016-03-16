@@ -32,7 +32,8 @@
 				color.rgb *= _LightRatio;
 
 				fixed4 gui = tex2D(_GUITexture, uv);
-				color.rgb = lerp(color.rgb, min(1, color.rgb + gui.rgb), 1. - step(0.75, _LightRatio));
+				// color.rgb = lerp(color.rgb, min(1, color.rgb + gui.rgb), 1. - step(0.75, _LightRatio));
+				color.rgb += min(1, color.rgb + gui.rgb * gui.a);
 
 				return color;
 			}

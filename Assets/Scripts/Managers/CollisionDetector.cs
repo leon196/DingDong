@@ -23,9 +23,9 @@ public class CollisionDetector : MonoBehaviour
 		frameBuffer = GetComponent<FrameBuffer>();
 		renderTexture = frameBuffer.GetCurrentTexture();
 
-		rect = new Rect(0f, 0f, GameManager.width, GameManager.height);
-		texture2D = new Texture2D((int)GameManager.width, (int)GameManager.height);
-		colorArray = new Color[(int)GameManager.width * (int)GameManager.height];
+		rect = new Rect(0f, 0f, Game.width, Game.height);
+		texture2D = new Texture2D((int)Game.width, (int)Game.height);
+		colorArray = new Color[(int)Game.width * (int)Game.height];
 
 		if (collectibleList == null) {
 			collectibleList = new List<Collectible>();
@@ -46,8 +46,8 @@ public class CollisionDetector : MonoBehaviour
 		colorArray = texture2D.GetPixels();
 		int index = 0;
 		foreach (Color color in colorArray) {
-			position.x = (index % GameManager.width);
-			position.y = Mathf.Floor(index / GameManager.width);
+			position.x = (index % Game.width);
+			position.y = Mathf.Floor(index / Game.width);
 			if (color.r + color.g + color.b == 3f) {
 				foreach (Collectible collectible in collectibleList) {
 					if (collectible.HitTest(position)) {
@@ -62,9 +62,9 @@ public class CollisionDetector : MonoBehaviour
 
 	public void UpdateResolution ()
 	{
-		rect = new Rect(0f, 0f, GameManager.width, GameManager.height);
-		texture2D = new Texture2D((int)GameManager.width, (int)GameManager.height);
-		colorArray = new Color[(int)GameManager.width * (int)GameManager.height];
+		rect = new Rect(0f, 0f, Game.width, Game.height);
+		texture2D = new Texture2D((int)Game.width, (int)Game.height);
+		colorArray = new Color[(int)Game.width * (int)Game.height];
 	}
 
 	public void AddCollectible (Collectible collectible)
