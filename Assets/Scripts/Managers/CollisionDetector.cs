@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 [RequireComponent (typeof (FrameBuffer))]
-public class MotionManager : MonoBehaviour 
+public class CollisionDetector : MonoBehaviour 
 {
 	FrameBuffer frameBuffer;
 
@@ -11,13 +11,11 @@ public class MotionManager : MonoBehaviour
 	RenderTexture renderTexture;
 	Color[] colorArray;
 	Rect rect;
-
-	List<Target> targetList;
-
 	Vector2 position;
-	float distanceTreshold;
 
-  public delegate void CollisionDelegate (int index, float x, float y);
+	List<Collectible> collectibleList;
+
+  public delegate void CollisionDelegate (Collectible collectible);
   public CollisionDelegate collisionDelegate;
 
 	void Start ()
@@ -29,7 +27,9 @@ public class MotionManager : MonoBehaviour
 		texture2D = new Texture2D((int)GameManager.width, (int)GameManager.height);
 		colorArray = new Color[(int)GameManager.width * (int)GameManager.height];
 
-		targetList = new List<Target>();
+		if (collectibleList == null) {
+			collectibleList = new List<Collectible>();
+		}
 
 		position = Vector2.zero;
 	}
@@ -49,9 +49,9 @@ public class MotionManager : MonoBehaviour
 			position.x = (index % GameManager.width);
 			position.y = Mathf.Floor(index / GameManager.width);
 			if (color.r + color.g + color.b == 3f) {
-				foreach (Target target in targetList) {
-					if (Vector2.Distance(position, target.position) < distanceTreshold) {
-						collisionDelegate(target.index, position.x, position.y);
+				foreach (Collectible collectible in collectibleList) {
+					if (collectible.HitTest(position)) {
+						collisionDelegate(collectible);
 						break;
 					}
 				}
@@ -67,14 +67,16 @@ public class MotionManager : MonoBehaviour
 		colorArray = new Color[(int)GameManager.width * (int)GameManager.height];
 	}
 
-	public void AddTarget ()
+	public void AddCollectible (Collectible collectible)
 	{
-		// targetList.Add(new Target())
+		if (collectibleList == null) {
+			collectibleList = new List<Collectible>();
+		}
+		collectibleList.Add(collectible);
 	}
 
-	public void UpdateTarget (int index, float x, float y, float size) 
+	public void ClearCollectibleList ()
 	{
-		targetList[index].position = new Vector2(x * GameManager.width, y * GameManager.height);
-		distanceTreshold = size * GameManager.height;
+		collectibleList = new List<Collectible>();
 	}
 }

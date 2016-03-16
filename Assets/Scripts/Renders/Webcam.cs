@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class WebcamManager : MonoBehaviour 
+public class Webcam : MonoBehaviour 
 {
 	public string webcamName = "";
 	public float treshold = 0.1f;
