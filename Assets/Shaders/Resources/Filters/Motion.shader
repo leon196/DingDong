@@ -17,6 +17,8 @@
 			sampler2D _WebcamTexture;
 			sampler2D _WebcamTextureLast;
 			sampler2D _GUITexture;
+			sampler2D _BonusTexture;
+			sampler2D _MalusTexture;
 
 			float _TresholdMotion;
 			float _FadeOutRatio;
@@ -43,7 +45,9 @@
 				float2 position = _BonusPosition - i.uv;
 				position.x *= _Resolution.x / _Resolution.y;
 				float circle = step(length(position), _BonusSize);
-				col.rgb = lerp(col.rgb, _BonusColor, circle);
+				position = (position / (_BonusSize * 1.5) + float2(0.5, 0.5));
+				float4 circleTexture = tex2D(_BonusTexture, position);
+				// col.rgb = lerp(col.rgb, circleTexture.rgb * _BonusColor, circleTexture.a * circle);
 
 				// Splash origin vector
 				position = uv - _CollisionPosition;
@@ -64,18 +68,23 @@
 				float3 current = tex2D(_WebcamTexture, uv).rgb;
 				float3 last = tex2D(_WebcamTextureLast, uv).rgb;
 				motion.rgb *= step(_TresholdMotion, abs(current.r - last.r) + abs(current.g - last.g) + abs(current.b - last.b));
+				// motion.rgb = lerp(motion.rgb, current, _SplashesRatio);
+
+				float4 fadeOut = fixed4(1,1,1,1);
+
+				// Add Bonus
+				fadeOut.rgb = lerp(tex2D(_MotionTexture, uv).rgb, _BonusColor, circle);// * (1 - circleTexture.a));
 
 				// Ghost effect
-				float4 fadeOut = fixed4(1,1,1,1);
-				fadeOut.rgb = lerp(tex2D(_MotionTexture, uv).rgb, _BonusColor, circle);
 				fadeOut.rgb *= lerp(_FadeOutRatio, 0.98, _SplashesRatio);
 
 				// Layer Motion
 				col.rgb = lerp(fadeOut, motion, step(0.5, motion));
 
+
 				// Layer GUI
-				fixed4 gui = tex2D(_GUITexture, i.uv);
-				col.rgb = lerp(col.rgb, _GUIColor, gui.a);
+				// fixed4 gui = tex2D(_GUITexture, i.uv);
+				// col.rgb = lerp(col.rgb, _GUIColor, gui.a);
 
 				return col;
 			}

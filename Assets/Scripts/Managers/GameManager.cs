@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
 	BonusManager bonus;
 	TimeManager time;
 	GUIManager gui;
-	DrawLine drawLine;
+	DrawGrid grid;
 
 	public AudioClip clipCollision;
 	public AudioClip clipGameOver;
@@ -15,10 +15,8 @@ public class GameManager : MonoBehaviour
 	static public float width = 256f;
 	static public float height = 256f;
 
-	public enum GameState { Playing, Scoring };
-	GameState gameState = GameState.Playing;
-
-	bool gameIsWithMalus = true;
+	public enum GameState { Title, Playing, Scoring };
+	GameState gameState = GameState.Title;
 
 	float currentScore = 0f;
 
@@ -28,14 +26,32 @@ public class GameManager : MonoBehaviour
 		time = GameObject.FindObjectOfType<TimeManager>();
 		gui = GameObject.FindObjectOfType<GUIManager>();
 		motion = GameObject.FindObjectOfType<MotionManager>();
-		drawLine = GameObject.FindObjectOfType<DrawLine>();
+		grid = GameObject.FindObjectOfType<DrawGrid>();
 		motion.collisionDelegate = Collision;
 		
 		UpdateResolution();
-		gui.SetScore(currentScore);
+		GotoTitle();
+	}
 
+	void GotoTitle ()
+	{
+		gameState = GameState.Title;
+		gui.GotoTitle();
+		bonus.SetBonus(new Vector2(0.5f, 0.25f), 0.15f);
 		Shader.SetGlobalFloat("_SplashesRatio", 0f);
-		drawLine.AddGrid("grid", 8, 8);
+		Shader.SetGlobalFloat("_ShowWebcam", 1f);
+	}
+
+	void GotoGame ()
+	{
+		gameState = GameState.Playing;
+		currentScore = 0f;
+		gui.GotoGame();
+		gui.UpdateAlpha(1f);
+		gui.SetScore(currentScore);
+		bonus.SetBonusSize(0.5f / grid.width);
+		Shader.SetGlobalFloat("_SplashesRatio", 0f);
+		Shader.SetGlobalFloat("_ShowWebcam", 0f);
 	}
 	
 	void Update () 
@@ -46,10 +62,34 @@ public class GameManager : MonoBehaviour
 
 		switch (gameState) {
 
+			// TITLE
+			case GameState.Title : {
+
+				// Collision with Start
+				if (bonus.bonusHitted)  {
+					bonus.UpdateSplash();
+
+					Shader.SetGlobalFloat("_ShowWebcam", 1f - bonus.GetUpdateRatio());
+					gui.UpdateAlpha(1f - bonus.GetUpdateRatio());
+
+					// Goto Game
+					if (bonus.bonusSplashed)  {
+						GotoGame();
+					}
+				} 
+
+				// Update
+				else  {
+					bonus.UpdateRespawn();
+				}
+
+				break;
+			}
+
 			// PLAY
 			case GameState.Playing : {
 
-				gui.UpdateCooldownSize();
+				// gui.UpdateCooldownSize();
 
 				// Splash
 				if (bonus.bonusHitted)  {
@@ -68,20 +108,22 @@ public class GameManager : MonoBehaviour
 					// Cooldown
 					if (bonus.bonusRespawned)  {
 
-						if (currentScore != 0f) {
-							time.UpdateCooldown();
-						}
+						// if (currentScore != 0f) {
+							// time.UpdateCooldown();
+						// }
 
 						// Goto Score
+						/*
 						if (time.cooldownOver) {
 							gameState = GameState.Scoring;
-							time.StartCooldownScore(currentScore);
+							time.StartCooldownScore(Mathf.Clamp(currentScore, 0f, 10f));
 							gui.CenterScore();
 							bonus.Idle();
 							Shader.SetGlobalFloat("_SplashesRatio", 1f);
 							Shader.SetGlobalVector("_CollisionPosition", Vector2.one * 0.5f);
 							AudioSource.PlayClipAtPoint(clipGameOver, Camera.main.transform.position, 0.5f);
 						}
+						*/
 					}				
 				}
 				break;
@@ -102,7 +144,6 @@ public class GameManager : MonoBehaviour
 					time.StartCooldown();
 					time.UpdateCooldown();
 					gui.SnapScore();
-					bonus.Reset();
 					Shader.SetGlobalFloat("_SplashesRatio", 0f);
 				}
 
@@ -111,11 +152,13 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-	public void Collision (float hitX, float hitY)
+	public void Collision (int index, float hitX, float hitY)
 	{
 		if (bonus.bonusHitted == false && bonus.bonusRespawned) {
-			time.StartCooldown();
-			gui.SetScore(++currentScore);
+			if (gameState == GameState.Playing) {
+				time.StartCooldown();
+				gui.SetScore(++currentScore);
+			}
 			AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
 		}
 		bonus.HitTest(hitX, hitY);

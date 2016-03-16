@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [RequireComponent (typeof (FrameBuffer))]
 public class MotionManager : MonoBehaviour 
@@ -11,11 +12,12 @@ public class MotionManager : MonoBehaviour
 	Color[] colorArray;
 	Rect rect;
 
-	Vector2 target;
+	List<Target> targetList;
+
 	Vector2 position;
 	float distanceTreshold;
 
-  public delegate void CollisionDelegate (float x, float y);
+  public delegate void CollisionDelegate (int index, float x, float y);
   public CollisionDelegate collisionDelegate;
 
 	void Start ()
@@ -26,6 +28,8 @@ public class MotionManager : MonoBehaviour
 		rect = new Rect(0f, 0f, GameManager.width, GameManager.height);
 		texture2D = new Texture2D((int)GameManager.width, (int)GameManager.height);
 		colorArray = new Color[(int)GameManager.width * (int)GameManager.height];
+
+		targetList = new List<Target>();
 
 		position = Vector2.zero;
 	}
@@ -44,9 +48,13 @@ public class MotionManager : MonoBehaviour
 		foreach (Color color in colorArray) {
 			position.x = (index % GameManager.width);
 			position.y = Mathf.Floor(index / GameManager.width);
-			if (color.r + color.g + color.b == 3f && Vector2.Distance(position, target) < distanceTreshold) {
-				collisionDelegate(position.x, position.y);
-				break;
+			if (color.r + color.g + color.b == 3f) {
+				foreach (Target target in targetList) {
+					if (Vector2.Distance(position, target.position) < distanceTreshold) {
+						collisionDelegate(target.index, position.x, position.y);
+						break;
+					}
+				}
 			}
 			++index;
 		}
@@ -59,9 +67,14 @@ public class MotionManager : MonoBehaviour
 		colorArray = new Color[(int)GameManager.width * (int)GameManager.height];
 	}
 
-	public void SetTarget (float x, float y, float size) 
+	public void AddTarget ()
 	{
-		target = new Vector2(x * GameManager.width, y * GameManager.height);
+		// targetList.Add(new Target())
+	}
+
+	public void UpdateTarget (int index, float x, float y, float size) 
+	{
+		targetList[index].position = new Vector2(x * GameManager.width, y * GameManager.height);
 		distanceTreshold = size * GameManager.height;
 	}
 }

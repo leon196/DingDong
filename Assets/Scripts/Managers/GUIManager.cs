@@ -5,14 +5,18 @@ public class GUIManager : MonoBehaviour
 {
 	public TextMesh scoreMesh;
 	public TextMesh textMesh;
-	Renderer textMeshRender;
+	public TextMesh titleMesh;
+	public TextMesh startMesh;
+	public TextMesh authorMesh;
 	
 	WebcamManager webcam;
 	BonusManager bonus;
 	TimeManager time;
+	DrawGrid drawGrid;
 
 	Color textColor;
 	Color textColorNext;
+	Color colorAlpha;
 	float textColorRatio = 0f;
 	float textSize;
 	float textColorHue = 0f;
@@ -23,13 +27,15 @@ public class GUIManager : MonoBehaviour
 		webcam = GameObject.FindObjectOfType<WebcamManager>();
 		time = GameObject.FindObjectOfType<TimeManager>();
 		bonus = GameObject.FindObjectOfType<BonusManager>();
-		textMeshRender = textMesh.GetComponent<Renderer>();
-		Shader.SetGlobalFloat("_LightRatio", textMeshRender.enabled ? 0.5f : 1f);
+		drawGrid = GameObject.FindObjectOfType<DrawGrid>();
+		drawGrid.shouldDrawGrid = textMesh.GetComponent<Renderer>().enabled;
+		Shader.SetGlobalFloat("_LightRatio", textMesh.GetComponent<Renderer>().enabled ? 0.5f : 1f);
 		SetColor(Color.white);
 
 		textSize = scoreMesh.characterSize;
 		textColor = scoreMesh.color;
 		textColorNext = ColorHSV.GetRandomColor(Random.Range(0.0f, 360f), 1, 1);
+		colorAlpha = new Color(1f,1f,1f,0f);
 		UpdateText();
 	}
 
@@ -58,8 +64,9 @@ public class GUIManager : MonoBehaviour
 	{
 		// Toggle labels
 		if (Input.GetKeyDown(KeyCode.Space)) {
-			textMeshRender.enabled = !textMeshRender.enabled;
-			Shader.SetGlobalFloat("_LightRatio", textMeshRender.enabled ? 0.5f : 1f);
+			textMesh.GetComponent<Renderer>().enabled = !textMesh.GetComponent<Renderer>().enabled;
+			drawGrid.shouldDrawGrid = textMesh.GetComponent<Renderer>().enabled;
+			Shader.SetGlobalFloat("_LightRatio", textMesh.GetComponent<Renderer>().enabled ? 0.5f : 1f);
 		}
 
 		if (Input.anyKey) {
@@ -77,10 +84,32 @@ public class GUIManager : MonoBehaviour
 			+ "bonus size (+ / -) : " + bonus.bonusSize;
 	}
 
+	public void GotoTitle ()
+	{
+		titleMesh.GetComponent<Renderer>().enabled = true;
+		startMesh.GetComponent<Renderer>().enabled = true;
+		scoreMesh.GetComponent<Renderer>().enabled = false;
+		authorMesh.GetComponent<Renderer>().enabled = true;
+	}
+
+	public void GotoGame ()
+	{
+		titleMesh.GetComponent<Renderer>().enabled = false;
+		startMesh.GetComponent<Renderer>().enabled = false;
+		scoreMesh.GetComponent<Renderer>().enabled = true;
+		authorMesh.GetComponent<Renderer>().enabled = false;
+	}
+
 	public void SetColor (Color color)
 	{
 		Shader.SetGlobalColor("_GUIColor", color);
 		textColor = color;
+	}
+
+	public void UpdateAlpha (float ratio)
+	{
+		textColor = Color.Lerp(colorAlpha, Color.white, ratio);
+		Shader.SetGlobalColor("_GUIColor", textColor);
 	}
 
 	public void SetScore (float score)

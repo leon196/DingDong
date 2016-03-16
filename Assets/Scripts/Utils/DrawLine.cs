@@ -65,7 +65,7 @@ class GridVec3
             lineVec3.a.y = lineVec3.b.y = y / height;
             lineVec3.a.y = 0f;
             lineVec3.b.y = 1f;
-            columnArray[y] = lineVec3;
+            rowArray[y] = lineVec3;
         }
     }
 }
@@ -79,7 +79,7 @@ public class DrawLine : MonoBehaviour
     Dictionary<string, int> rectangleKeyValueMap;
     Dictionary<string, int> gridKeyValueMap;
 
-    void Start ()
+    void Awake ()
     {
         material = new Material(Shader.Find("Hidden/Line"));
         rectangleList = new List<RectVec3>();
