@@ -75,6 +75,11 @@ public class CollisionDetector : MonoBehaviour
 		collectibleList.Add(collectible);
 	}
 
+	public void RemoveCollectible (int index)
+	{
+		collectibleList.RemoveAt(index);
+	}
+
 	public void ClearCollectibleList ()
 	{
 		collectibleList = new List<Collectible>();

@@ -22,7 +22,7 @@ public class Collectible
 		cooldownSplash = new Cooldown();
 		position = pos;
 		screenPosition = new Vector2();
-		screenPosition.x = position.x * GameManager.width * Screen.width / (float)Screen.height;
+		screenPosition.x = position.x * GameManager.width;
 		screenPosition.y = position.y * GameManager.height;
 		color = ColorHSV.GetRandomColor();
 		size = Grid.cellSize * 2f;
@@ -47,7 +47,7 @@ public class Collectible
 		pos.y = position.y * 2f - 1f;
 		sprite.transform.position = pos;
 
-		sprite.transform.localScale = Vector3.one * size;
+		sprite.transform.localScale = Vector3.zero;
 	}
 
 	public void Spawn ()

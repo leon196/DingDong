@@ -88,7 +88,7 @@ public class GUI : MonoBehaviour
 
 	void UpdateText ()
 	{
-		textMesh.text = "Ding Dong" + '\n'
+		textMesh.text = webcam.webcamName + '\n'
 		+ "luminance treshold (Left / Right) : " + webcam.treshold + '\n'
 		+ "fade out ratio (Up / Down) : " + webcam.fadeOutRatio + '\n'
 		+ "mirror webcam (X / Y)" + '\n';

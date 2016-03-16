@@ -31,8 +31,8 @@
 				color.rgb = lerp(color.rgb, min(1, color.rgb + webcam.rgb * 0.5), _ShowWebcam);
 				color.rgb *= _LightRatio;
 
-				// fixed4 gui = tex2D(_GUITexture, uv);
-				// color.rgb = lerp(color.rgb, gui.rgb * _GUIColor.rgb, gui.a * _GUIColor.a);
+				fixed4 gui = tex2D(_GUITexture, uv);
+				color.rgb = lerp(color.rgb, min(1, color.rgb + gui.rgb), 1. - step(0.75, _LightRatio));
 
 				return color;
 			}
