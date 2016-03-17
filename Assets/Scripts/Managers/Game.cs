@@ -13,7 +13,7 @@ public class Game : MonoBehaviour
 	static public float width = 256f;
 	static public float height = 256f;
 
-	public enum GameState { Title, Playing, Transition, Scoring };
+	public enum GameState { Title, Playing, Transition, Over };
 	GameState gameState = GameState.Title;
 
 	float currentScore = 0f;
@@ -77,14 +77,9 @@ public class Game : MonoBehaviour
 	{
 		gameState = GameState.Transition;
 		gui.Goto(gameState);
-		for (int i = 0; i < collectibleList.Count; ++i) 
-		{
-			Collectible collectible = collectibleList[i];
-			if (collectible.isHitted == false) {
-				collectible.Splash();
-			}
-		}
+		gui.UpdateAlpha(1f);
 		gui.SetRandomMessage();
+		ClearLevel();
 		cooldownTransition.Start();
 	}
 
@@ -96,6 +91,16 @@ public class Game : MonoBehaviour
 		ClearCollectibleList();
 		currentBonusCount = 10;
 		SpawnBonus(10, 5);
+	}
+
+	void GotoOver ()
+	{
+		gameState = GameState.Over;
+		gui.Goto(gameState);
+		gui.UpdateAlpha(1f);
+		gui.SetOverMessage();
+		ClearLevel();
+		cooldownTransition.Start();
 	}
 	
 	void Update () 
@@ -179,7 +184,25 @@ public class Game : MonoBehaviour
 			}
 
 			// SCORE
-			case GameState.Scoring : {
+			case GameState.Over : {
+
+				cooldownTransition.Update();
+
+				for (int i = 0; i < collectibleList.Count; ++i) 
+				{
+					Collectible collectible = collectibleList[i];
+					collectible.Update();
+				}
+
+				gui.UpdateRainbow();
+				float ratio = Mathf.Sin(cooldownTransition.timeRatio * Mathf.PI);
+				gui.UpdateMessage(ratio);
+				Shader.SetGlobalFloat("_SplashRatio", ratio);
+
+				if (cooldownTransition.IsOver()) {
+					GotoTitle();
+				}
+
 				break;
 			}
 		}
@@ -221,6 +244,17 @@ public class Game : MonoBehaviour
 		collisionDetector.ClearCollectibleList();
 	}
 
+	void ClearLevel ()
+	{
+		for (int i = 0; i < collectibleList.Count; ++i) 
+		{
+			Collectible collectible = collectibleList[i];
+			if (collectible.isHitted == false) {
+				collectible.Splash();
+			}
+		}
+	}
+
 	void Collision (Collectible collectible)
 	{
 		switch (gameState) 
@@ -240,6 +274,12 @@ public class Game : MonoBehaviour
 					gui.SetScore(++currentScore);
 					Shader.SetGlobalVector("_SplashPosition", collectible.position);
 					AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
+				}
+				else
+				{
+					Shader.SetGlobalVector("_SplashPosition", collectible.position);
+					AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
+					GotoOver();
 				}
 				break;
 			}

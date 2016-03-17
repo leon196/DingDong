@@ -6,8 +6,7 @@ public class Malus : Collectible
 	public Malus (Vector2 pos) : base(pos)
 	{
 		sprite.GetComponent<Renderer>().material.mainTexture = TextureLoader.GetSkull();
-
-		color = Color.white;
+		color = ColorHSV.GetColor(300f, 1f, 1f);
 		spriteMaterial.color = color;
 	}
 }

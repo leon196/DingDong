@@ -26,7 +26,7 @@ public class Collectible
 		screenPosition.y = position.y * Game.height;
 		color = ColorHSV.GetRandomColor();
 		size = Grid.cellSize * 2f;
-		collisionRadius = Grid.cellSize / 2f * Game.height;
+		collisionRadius = size / 4f * Game.height;
 		isHitted = false;
 
 		AddSprite();
@@ -47,12 +47,16 @@ public class Collectible
 		pos.y = position.y * 2f - 1f;
 		sprite.transform.position = pos;
 
+		sprite.transform.Rotate(Vector3.forward * Random.Range(-20f, 20f));
+
 		sprite.transform.localScale = Vector3.zero;
 	}
 
 	public void Spawn ()
 	{
 		cooldownSpawn.Start();
+		cooldownSplash.Start();
+		isHitted = false;
 	}
 
 	public void Splash ()

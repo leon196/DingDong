@@ -7,8 +7,10 @@ public class TextureLoader
 	static Texture apple;
 	static Texture strawberry;
 	static Texture cake;
+	static Texture heart;
 	static Texture bomb;
 	static Texture skull;
+	static Texture clover;
 
 	static Texture[] bonusArray;
 
@@ -36,13 +38,25 @@ public class TextureLoader
 		return cake;
 	}
 
+	static public Texture GetHeart ()
+	{
+		if (heart == null) { heart = Resources.Load("heart-beats") as Texture; }
+		return heart;
+	}
+
+	static public Texture GetClover ()
+	{
+		if (clover == null) { clover = Resources.Load("clover") as Texture; }
+		return clover;
+	}
+
 	static public Texture GetRandomBonus ()
 	{
 		if (bonusArray == null) { 
 			bonusArray = new Texture[3]; 
 			bonusArray[0] = GetApple();
-			bonusArray[1] = GetStrawberry();
-			bonusArray[2] = GetCake();
+			bonusArray[1] = GetHeart();
+			bonusArray[2] = GetClover();
 		}
 		return bonusArray[Random.Range(0, bonusArray.Length)];
 	}

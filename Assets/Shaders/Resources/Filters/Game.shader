@@ -1,6 +1,7 @@
 ﻿Shader "Hidden/Game" {
 	Properties {
 		_MainTex ("Texture", 2D) = "white" {}
+		_InvertColor ("Invert Color", Float) = 0
 	}
 	SubShader {
 		Cull Off ZWrite Off ZTest Always
@@ -12,10 +13,12 @@
 			
 			sampler2D _MainTex;
 			sampler2D _WebcamTexture;
+			sampler2D _GameTexture;
 			sampler2D _MotionTexture;
 			sampler2D _GUITexture;
 
 			float _ShowWebcam;
+			float _InvertColor;
 			float _LightRatio;
 			float2 _Resolution;
 			float4 _GUIColor;
@@ -34,6 +37,11 @@
 				fixed4 gui = tex2D(_GUITexture, uv);
 				// color.rgb = lerp(color.rgb, min(1, color.rgb + gui.rgb), 1. - step(0.75, _LightRatio));
 				color.rgb += min(1, color.rgb + gui.rgb * gui.a);
+
+				// fixed4 game = tex2D(_GameTexture, uv);
+				// color.rgb += min(1, color.rgb + game.rgb * game.a);
+
+				color.rgb = lerp(color.rgb, 1. - color.rgb, _InvertColor);
 
 				return color;
 			}

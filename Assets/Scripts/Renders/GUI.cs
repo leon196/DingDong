@@ -6,6 +6,7 @@ public class GUI : MonoBehaviour
 {
 	Webcam webcam;
 	Grid grid;
+	float currentScore;
 
 	public TextMesh scoreMesh;
 	public TextMesh textMesh;
@@ -42,6 +43,7 @@ public class GUI : MonoBehaviour
 		messageMeshSize = messageMesh.characterSize;
 		messageMesh.characterSize = 0f;
 		currentMessage = 0;
+		currentScore = 0;
 
 		textSize = scoreMesh.characterSize;
 		textColor = Color.white;
@@ -129,6 +131,14 @@ public class GUI : MonoBehaviour
 				authorMesh.GetComponent<Renderer>().enabled = false;
 				break;
 			}
+			case Game.GameState.Over : {
+				titleMesh.GetComponent<Renderer>().enabled = false;
+				startMesh.GetComponent<Renderer>().enabled = false;
+				scoreMesh.GetComponent<Renderer>().enabled = false;
+				messageMesh.GetComponent<Renderer>().enabled = true;
+				authorMesh.GetComponent<Renderer>().enabled = false;
+				break;
+			}
 		}
 	}
 
@@ -141,6 +151,11 @@ public class GUI : MonoBehaviour
 	public void UpdateAlpha (float ratio)
 	{
 		Shader.SetGlobalColor("_GUIColor", Color.Lerp(colorAlpha, textColor, ratio));
+	}
+
+	public void SetOverMessage ()
+	{
+		messageMesh.text = "game over\nscore : " + currentScore;
 	}
 
 	public void SetRandomMessage ()
@@ -160,7 +175,8 @@ public class GUI : MonoBehaviour
 
 	public void SetScore (float score)
 	{
-		scoreMesh.text = "" + score;
+		currentScore = score;
+		scoreMesh.text = "" + currentScore;
 	}
 
 	public void CenterScore ()
