@@ -9,6 +9,7 @@ public class Game : MonoBehaviour
 
 	public AudioClip clipCollision;
 	public AudioClip clipGameOver;
+	public AudioClip clipWin;
 
 	static public float width = 256f;
 	static public float height = 256f;
@@ -18,11 +19,15 @@ public class Game : MonoBehaviour
 
 	float currentScore = 0f;
 	int currentBonusCount = 0;
+	int currentRound = 0;
 
 	List<Collectible> collectibleList;
 	int[] indexGridArray;
 	Button startButton;
 	Cooldown cooldownTransition;
+
+	float playerLife;
+	bool playerHurted;
 
 	void Start () 
 	{
@@ -57,20 +62,25 @@ public class Game : MonoBehaviour
 		collisionDetector.AddCollectible(startButton);
 		Shader.SetGlobalFloat("_SplashRatio", 0f);
 		Shader.SetGlobalFloat("_ShowWebcam", 1f);
+		Shader.SetGlobalFloat("_HurtRatio", 0f);
 	}
 
 	void GotoGame ()
 	{
 		gameState = GameState.Playing;
 		currentScore = 0f;
+		currentRound = 0;
+		playerLife = 3f;
+		playerHurted = false;
 		gui.Goto(gameState);
 		gui.UpdateAlpha(1f);
-		gui.SetScore(currentScore);
+		gui.SetScore(currentScore, playerLife);
 		ClearCollectibleList();
-		currentBonusCount = 3;//Random.Range(1, 4);
+		currentBonusCount = 3;
 		SpawnBonus(3);
 		Shader.SetGlobalFloat("_SplashRatio", 0f);
 		Shader.SetGlobalFloat("_ShowWebcam", 0f);
+		Shader.SetGlobalFloat("_HurtRatio", 0f);
 	}
 
 	void GotoTransition ()
@@ -78,9 +88,21 @@ public class Game : MonoBehaviour
 		gameState = GameState.Transition;
 		gui.Goto(gameState);
 		gui.UpdateAlpha(1f);
-		gui.SetRandomMessage();
-		ClearLevel();
+
+		if (playerHurted == false) {
+			gui.SetRandomMessage();
+			ClearLevel();
+		}
+		
 		cooldownTransition.Start();
+	}
+
+	void GotoBackToGame ()
+	{
+		gameState = GameState.Playing;
+		gui.Goto(gameState);
+		playerHurted = false;
+		Shader.SetGlobalFloat("_HurtRatio", 0f);
 	}
 
 	void GotoNextRound ()
@@ -89,8 +111,10 @@ public class Game : MonoBehaviour
 		gui.Goto(gameState);
 		gui.UpdateAlpha(1f);
 		ClearCollectibleList();
-		currentBonusCount = 10;
-		SpawnBonus(10, 5);
+		++currentRound;
+		currentBonusCount = Random.Range(3, 3 + (int)Mathf.Clamp(currentRound, 0, 10));
+		SpawnBonus(currentBonusCount, Random.Range(1, 1 + (int)Mathf.Clamp(currentRound, 0, 3)));
+		Shader.SetGlobalFloat("_HurtRatio", 0f);
 	}
 
 	void GotoOver ()
@@ -148,10 +172,13 @@ public class Game : MonoBehaviour
 							i = Mathf.Max(0, i - 1);
 
 							// Win check
-							--currentBonusCount;
-							if (currentBonusCount <= 0) 
-							{
-								GotoTransition();
+							if (collectible.GetType() == typeof(Bonus)) {
+								--currentBonusCount;
+								if (currentBonusCount <= 0) 
+								{
+									GotoTransition();
+									AudioSource.PlayClipAtPoint(clipWin, Camera.main.transform.position);
+								}
 							}
 						}
 					}
@@ -173,11 +200,22 @@ public class Game : MonoBehaviour
 
 				gui.UpdateRainbow();
 				float ratio = Mathf.Sin(cooldownTransition.timeRatio * Mathf.PI);
-				gui.UpdateMessage(ratio);
 				Shader.SetGlobalFloat("_SplashRatio", ratio);
 
-				if (cooldownTransition.IsOver()) {
-					GotoNextRound();
+				if (playerHurted == false) {
+					gui.UpdateMessage(ratio);
+
+					if (cooldownTransition.IsOver()) {
+						GotoNextRound();
+					}
+				} else {
+					gui.UpdateWatchOut(ratio);
+					float ratioScanline = Mathf.Sin(Mathf.Clamp(cooldownTransition.timeRatio * 20f, 0f, Mathf.PI));
+					Shader.SetGlobalFloat("_HurtRatio", ratioScanline);
+
+					if (cooldownTransition.IsOver()) {
+						GotoBackToGame();
+					}
 				}
 
 				break;
@@ -198,6 +236,9 @@ public class Game : MonoBehaviour
 				float ratio = Mathf.Sin(cooldownTransition.timeRatio * Mathf.PI);
 				gui.UpdateMessage(ratio);
 				Shader.SetGlobalFloat("_SplashRatio", ratio);
+
+				float ratioScanline = Mathf.Sin(Mathf.Clamp(cooldownTransition.timeRatio * 20f, 0f, Mathf.PI));
+				Shader.SetGlobalFloat("_HurtRatio", ratioScanline);
 
 				if (cooldownTransition.IsOver()) {
 					GotoTitle();
@@ -271,15 +312,24 @@ public class Game : MonoBehaviour
 				if (collectible.GetType() == typeof(Bonus))
 				{
 					collectible.Splash();
-					gui.SetScore(++currentScore);
+					gui.SetScore(++currentScore, playerLife);
 					Shader.SetGlobalVector("_SplashPosition", collectible.position);
 					AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
 				}
 				else
 				{
+					collectible.Splash();
 					Shader.SetGlobalVector("_SplashPosition", collectible.position);
-					AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
-					GotoOver();
+					--playerLife;
+					if (playerLife < 0f) {
+						GotoOver();
+						AudioSource.PlayClipAtPoint(clipGameOver, Camera.main.transform.position);
+					} else {
+						gui.SetScore(currentScore, playerLife);
+						playerHurted = true;
+						GotoTransition();
+						AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
+					}
 				}
 				break;
 			}

@@ -14,6 +14,7 @@ public class GUI : MonoBehaviour
 	public TextMesh startMesh;
 	public TextMesh authorMesh;
 	public TextMesh messageMesh;
+	public TextMesh watchOutMesh;
 
 	Color textColor;
 	Color textColorNext;
@@ -22,6 +23,8 @@ public class GUI : MonoBehaviour
 	float textSize;
 	float textColorHue = 0f;
 	float textSizeOver = 0.05f;
+
+	float watchOutScale;
 
 	float messageMeshSize;
 	string[] messageArray = new string[] { "yeah!", "nice!", "great!", "awesome!", "omg!" };
@@ -44,6 +47,9 @@ public class GUI : MonoBehaviour
 		messageMesh.characterSize = 0f;
 		currentMessage = 0;
 		currentScore = 0;
+
+		watchOutScale = watchOutMesh.transform.localScale.x;
+		watchOutMesh.transform.localScale = Vector3.zero;
 
 		textSize = scoreMesh.characterSize;
 		textColor = Color.white;
@@ -113,6 +119,7 @@ public class GUI : MonoBehaviour
 				scoreMesh.GetComponent<Renderer>().enabled = false;
 				messageMesh.GetComponent<Renderer>().enabled = false;
 				authorMesh.GetComponent<Renderer>().enabled = true;
+				watchOutMesh.GetComponent<Renderer>().enabled = false;
 				break;
 			}
 			case Game.GameState.Playing : {
@@ -126,9 +133,10 @@ public class GUI : MonoBehaviour
 			case Game.GameState.Transition : {
 				titleMesh.GetComponent<Renderer>().enabled = false;
 				startMesh.GetComponent<Renderer>().enabled = false;
-				scoreMesh.GetComponent<Renderer>().enabled = false;
+				scoreMesh.GetComponent<Renderer>().enabled = true;
 				messageMesh.GetComponent<Renderer>().enabled = true;
 				authorMesh.GetComponent<Renderer>().enabled = false;
+				watchOutMesh.GetComponent<Renderer>().enabled = true;
 				break;
 			}
 			case Game.GameState.Over : {
@@ -137,6 +145,7 @@ public class GUI : MonoBehaviour
 				scoreMesh.GetComponent<Renderer>().enabled = false;
 				messageMesh.GetComponent<Renderer>().enabled = true;
 				authorMesh.GetComponent<Renderer>().enabled = false;
+				watchOutMesh.GetComponent<Renderer>().enabled = false;
 				break;
 			}
 		}
@@ -173,10 +182,15 @@ public class GUI : MonoBehaviour
 		messageMesh.characterSize = Mathf.Lerp(0f, messageMeshSize, ratio);
 	}
 
-	public void SetScore (float score)
+	public void UpdateWatchOut (float ratio)
+	{
+		watchOutMesh.transform.localScale = Vector3.one * Mathf.Lerp(0f, watchOutScale, ratio);
+	}
+
+	public void SetScore (float score, float life)
 	{
 		currentScore = score;
-		scoreMesh.text = "" + currentScore;
+		scoreMesh.text = "score : " + currentScore + "    life : " + life;
 	}
 
 	public void CenterScore ()

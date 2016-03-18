@@ -9,7 +9,9 @@
 			CGPROGRAM
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.0
 			#include "UnityCG.cginc"
+			#define PI 3.1415926535897
 			
 			sampler2D _MainTex;
 			sampler2D _WebcamTexture;
@@ -19,16 +21,42 @@
 
 			float _ShowWebcam;
 			float _InvertColor;
+			float _HurtRatio;
 			float _LightRatio;
 			float2 _Resolution;
 			float4 _GUIColor;
+
+			fixed3 rgbOffset (sampler2D bitmap, float2 uv, float radius, float angle)
+			{
+				fixed3 rgb = fixed3(0,0,0);
+				float3 rgbAngle = float3(angle, PI * 2. / 3. + angle, PI * 4. / 3. + angle);
+				rgb.r = tex2D(bitmap, uv + float2(cos(rgbAngle.r), sin(rgbAngle.r)) * radius).r;
+				rgb.g = tex2D(bitmap, uv + float2(cos(rgbAngle.g), sin(rgbAngle.g)) * radius).g;
+				rgb.b = tex2D(bitmap, uv + float2(cos(rgbAngle.b), sin(rgbAngle.b)) * radius).b;
+				return rgb;
+			}	
+
+			// https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
+			float rand (float2 n)
+			{
+			  return frac(sin(dot(n, float2(12.9898, 4.1414))) * 43758.5453);
+			}
 
 			fixed4 frag (v2f_img i) : SV_Target 
 			{
 				float2 uv = i.uv;
 				uv = lerp(uv, floor(uv * _Resolution) / _Resolution, step(0.75, _LightRatio));
 
-				fixed4 color = tex2D(_MotionTexture, uv);
+				float t = _Time;
+
+				float scalineOffset = (rand(uv.yy) * 2. - 1.) * (0.01 + rand(uv.yy + float2(t, 0.)) * 0.02);
+
+				uv = lerp(uv, uv + float2(scalineOffset, 0.), _HurtRatio);
+
+				// fixed4 color = tex2D(_MotionTexture, uv);
+				fixed4 color = fixed4(0,0,0,1);
+				color.rgb = lerp(tex2D(_MotionTexture, uv).rgb, rgbOffset(_MotionTexture, uv, 3. / _Resolution.y, 0.), _HurtRatio);
+
 				fixed4 webcam = tex2D(_WebcamTexture, uv);
 
 				color.rgb = lerp(color.rgb, min(1, color.rgb + webcam.rgb * 0.5), _ShowWebcam);
