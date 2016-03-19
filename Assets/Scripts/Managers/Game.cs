@@ -49,6 +49,8 @@ public class Game : MonoBehaviour
 		startButton.UpdateSize(0.3f);
 		AddCollectible(startButton);
 
+		Cursor.visible = false;
+
 		GotoTitle();
 	}
 
@@ -170,16 +172,6 @@ public class Game : MonoBehaviour
 							// Recycle
 							RemoveCollectible(i);
 							i = Mathf.Max(0, i - 1);
-
-							// Win check
-							if (collectible.GetType() == typeof(Bonus)) {
-								--currentBonusCount;
-								if (currentBonusCount <= 0) 
-								{
-									GotoTransition();
-									AudioSource.PlayClipAtPoint(clipWin, Camera.main.transform.position);
-								}
-							}
 						}
 					}
 				}
@@ -315,11 +307,23 @@ public class Game : MonoBehaviour
 					gui.SetScore(++currentScore, playerLife);
 					Shader.SetGlobalVector("_SplashPosition", collectible.position);
 					AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
+
+					// Win check
+					if (collectible.GetType() == typeof(Bonus)) {
+						--currentBonusCount;
+						if (currentBonusCount <= 0) 
+						{
+							GotoTransition();
+							AudioSource.PlayClipAtPoint(clipWin, Camera.main.transform.position);
+						}
+					}
 				}
 				else
 				{
 					collectible.Splash();
 					Shader.SetGlobalVector("_SplashPosition", collectible.position);
+
+					// Game over check
 					--playerLife;
 					if (playerLife < 0f) {
 						GotoOver();

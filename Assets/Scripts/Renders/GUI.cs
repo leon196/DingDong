@@ -103,9 +103,10 @@ public class GUI : MonoBehaviour
 	void UpdateText ()
 	{
 		textMesh.text = webcam.webcamName + '\n'
-		+ "luminance treshold (Left / Right) : " + webcam.treshold + '\n'
+		+ "motion treshold (Left / Right) : " + webcam.treshold + '\n'
 		+ "fade out ratio (Up / Down) : " + webcam.fadeOutRatio + '\n'
-		+ "mirror webcam (X / Y)" + '\n';
+		+ "mirror webcam (X / Y)" + '\n'
+		+ "change camera with C";
 			// + "cooldown delay (P / M) : " + time.cooldownDelay + '\n';
 			// + "bonus size (+ / -) : " + bonus.bonusSize;
 	}

@@ -7,6 +7,7 @@ public class Webcam : MonoBehaviour
 	public float treshold = 0.1f;
 	public float fadeOutRatio = 0.95f;
 	WebCamTexture textureWebcam;
+	int currentWebcam;
 
 	void Start () 
 	{
@@ -20,6 +21,8 @@ public class Webcam : MonoBehaviour
 			textureWebcam = new WebCamTexture();
 			Shader.SetGlobalTexture("_TextureWebcam", textureWebcam);
 			textureWebcam.Play();
+
+			currentWebcam = 0;
 		}
 
 		UpdateUniforms();
@@ -39,6 +42,17 @@ public class Webcam : MonoBehaviour
 			fadeOutRatio = Mathf.Clamp(fadeOutRatio - 0.001f, 0f, 1f);
 		} else if (Input.GetKey(KeyCode.UpArrow)) { 
 			fadeOutRatio = Mathf.Clamp(fadeOutRatio + 0.001f, 0f, 1f);
+		}
+
+		// Switch camera
+		if (Input.GetKeyDown(KeyCode.C)) {
+			if (WebCamTexture.devices.Length > 1) {
+				currentWebcam = (currentWebcam + 1) % WebCamTexture.devices.Length;
+				textureWebcam.Stop();
+				textureWebcam = new WebCamTexture(WebCamTexture.devices[currentWebcam].name);
+				Shader.SetGlobalTexture("_TextureWebcam", textureWebcam);
+				textureWebcam.Play();
+			}
 		}
 
 		if (Input.anyKey) {
