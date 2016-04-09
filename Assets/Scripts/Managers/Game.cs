@@ -14,8 +14,8 @@ public class Game : MonoBehaviour
 	static public float width = 256f;
 	static public float height = 256f;
 
-	public enum GameState { Title, Playing, Transition, Over };
-	GameState gameState = GameState.Title;
+	public enum GameState { Title, Playing, Transition, Over, Chilling };
+	GameState gameState = GameState.Chilling;
 
 	float currentScore = 0f;
 	int currentBonusCount = 0;
@@ -25,9 +25,12 @@ public class Game : MonoBehaviour
 	int[] indexGridArray;
 	Button startButton;
 	Cooldown cooldownTransition;
+	Cooldown cooldownChilling;
 
 	float playerLife;
 	bool playerHurted;
+
+	float debugWebcam = 0f;
 
 	void Start () 
 	{
@@ -44,14 +47,16 @@ public class Game : MonoBehaviour
 		UpdateResolution();
 
 		cooldownTransition = new Cooldown(5f);
+		cooldownChilling = new Cooldown(3f);
+		cooldownChilling.Start();
 
 		startButton = new Button(new Vector2(0.5f, 0.5f));
 		startButton.UpdateSize(0.3f);
-		AddCollectible(startButton);
+		// AddCollectible(startButton);
 
 		Cursor.visible = false;
 
-		GotoTitle();
+		GotoChilling();
 	}
 
 	void GotoTitle ()
@@ -128,11 +133,26 @@ public class Game : MonoBehaviour
 		ClearLevel();
 		cooldownTransition.Start();
 	}
+
+	void GotoChilling ()
+	{
+		gameState = GameState.Chilling;
+		gui.Goto(gameState);
+		gui.UpdateAlpha(1f);
+		Shader.SetGlobalFloat("_SplashRatio", 0f);
+		Shader.SetGlobalFloat("_ShowWebcam", 0.5f);
+		Shader.SetGlobalFloat("_HurtRatio", 0f);
+	}
 	
 	void Update () 
 	{
 		if (Input.GetKeyDown(KeyCode.Escape)) {
 			Application.Quit();
+		}
+
+		if (Input.GetKeyDown(KeyCode.D)) {
+			debugWebcam = (debugWebcam + 1f) % 2f;
+			Shader.SetGlobalFloat("_ShowWebcam", debugWebcam);
 		}
 
 		switch (gameState) {
@@ -238,6 +258,37 @@ public class Game : MonoBehaviour
 
 				break;
 			}
+
+			// CHILLING
+			case GameState.Chilling : {
+
+				cooldownChilling.Update();
+
+				if (cooldownChilling.IsOver()) {
+					cooldownChilling.Start();
+
+					if (collectibleList.Count < Grid.width * Grid.height - 1) {
+						SpawnBonus(1);
+					}
+				}
+
+				for (int i = 0; i < collectibleList.Count; ++i) 
+				{
+					Collectible collectible = collectibleList[i];
+					collectible.Update();
+
+					if (collectible.isHitted)  {
+						Shader.SetGlobalFloat("_SplashRatio", 1f - collectible.cooldownSplash.timeRatio);
+
+						if (collectible.SplashIsOver())  {
+							RemoveCollectible(i);
+							i = Mathf.Max(0, i - 1);
+						}
+					}
+				}
+
+				break;
+			}
 		}
 	}
 
@@ -309,13 +360,18 @@ public class Game : MonoBehaviour
 					AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
 
 					// Win check
-					if (collectible.GetType() == typeof(Bonus)) {
-						--currentBonusCount;
-						if (currentBonusCount <= 0) 
-						{
-							GotoTransition();
-							AudioSource.PlayClipAtPoint(clipWin, Camera.main.transform.position);
-						}
+					--currentBonusCount;
+					if (currentBonusCount <= 0) 
+					{
+						GotoTransition();
+						AudioSource.PlayClipAtPoint(clipWin, Camera.main.transform.position);
+					}
+
+					// Get Life
+					Bonus bonus = (Bonus)collectible;
+					if (bonus.type == Bonus.BonusType.Heart) {
+						++playerLife;
+						gui.SetScore(currentScore, playerLife);
 					}
 				}
 				else
@@ -335,6 +391,12 @@ public class Game : MonoBehaviour
 						AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
 					}
 				}
+				break;
+			}
+			case GameState.Chilling : 
+			{
+				collectible.Splash();
+				Shader.SetGlobalVector("_SplashPosition", collectible.position);
 				break;
 			}
 		}

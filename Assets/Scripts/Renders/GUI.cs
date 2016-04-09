@@ -89,15 +89,15 @@ public class GUI : MonoBehaviour
 			UpdateText();
 		}
 
-		// textColorRatio = textColorRatio + Time.deltaTime;
-		// SetColor(Color.Lerp(textColor, textColorNext, Mathf.Clamp(textColorRatio, 0f, 1f)));
+		textColorRatio = textColorRatio + Time.deltaTime * 5f;
+		SetColor(Color.Lerp(textColor, textColorNext, Mathf.Clamp(textColorRatio, 0f, 1f)));
 
-		// if (textColorRatio > 1f) {
-		// 	textColorRatio = 0f;
-		// 	textColor = textColorNext;
-		// 	textColorHue = (textColorHue + 10f) % 360f;
-		// 	textColorNext = ColorHSV.GetColor(textColorHue, 1, 1);
-		// }
+		if (textColorRatio > 1f) {
+			textColorRatio = 0f;
+			textColor = textColorNext;
+			textColorHue = (textColorHue + 10f) % 360f;
+			textColorNext = ColorHSV.GetColor(textColorHue, 1, 1);
+		}
 	}
 
 	void UpdateText ()
@@ -145,6 +145,15 @@ public class GUI : MonoBehaviour
 				startMesh.GetComponent<Renderer>().enabled = false;
 				scoreMesh.GetComponent<Renderer>().enabled = false;
 				messageMesh.GetComponent<Renderer>().enabled = true;
+				authorMesh.GetComponent<Renderer>().enabled = false;
+				watchOutMesh.GetComponent<Renderer>().enabled = false;
+				break;
+			}
+			case Game.GameState.Chilling : {
+				titleMesh.GetComponent<Renderer>().enabled = false;
+				startMesh.GetComponent<Renderer>().enabled = false;
+				scoreMesh.GetComponent<Renderer>().enabled = false;
+				messageMesh.GetComponent<Renderer>().enabled = false;
 				authorMesh.GetComponent<Renderer>().enabled = false;
 				watchOutMesh.GetComponent<Renderer>().enabled = false;
 				break;

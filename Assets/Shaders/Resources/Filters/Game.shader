@@ -42,6 +42,43 @@
 			  return frac(sin(dot(n, float2(12.9898, 4.1414))) * 43758.5453);
 			}
 
+			half4 edgeFilter (sampler2D bitmap, float2 uv, float2 dimension)
+			{
+			  half4 color = half4(0.0, 0.0, 0.0, 0.0);
+
+			  color += -1.0 * tex2D(bitmap, uv + float2(-2, -2) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2(-2, -1) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2(-2,  0) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2(-2,  1) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2(-2,  2) / dimension);
+
+			  color += -1.0 * tex2D(bitmap, uv + float2(-1, -2) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2(-1, -1) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2(-1,  0) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2(-1,  1) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2(-1,  2) / dimension);
+
+			  color += -1.0 * tex2D(bitmap, uv + float2( 0, -2) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2( 0, -1) / dimension);
+			  color += 24.0 * tex2D(bitmap, uv + float2( 0,  0) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2( 0,  1) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2( 0,  2) / dimension);
+
+			  color += -1.0 * tex2D(bitmap, uv + float2( 1, -2) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2( 1, -1) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2( 1,  0) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2( 1,  1) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2( 1,  2) / dimension);
+
+			  color += -1.0 * tex2D(bitmap, uv + float2( 2, -2) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2( 2, -1) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2( 2,  0) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2( 2,  1) / dimension);
+			  color += -1.0 * tex2D(bitmap, uv + float2( 2,  2) / dimension);
+
+			  return color;
+			}
+
 			fixed4 frag (v2f_img i) : SV_Target 
 			{
 				float2 uv = i.uv;
@@ -64,7 +101,10 @@
 
 				fixed4 gui = tex2D(_GUITexture, uv);
 				// color.rgb = lerp(color.rgb, min(1, color.rgb + gui.rgb), 1. - step(0.75, _LightRatio));
-				color.rgb += min(1, color.rgb + gui.rgb * gui.a);
+				color.rgb = min(1, color.rgb + gui.rgb * gui.a);
+
+				fixed3 silhouette = step(0.75, Luminance(edgeFilter(_WebcamTexture, uv, _Resolution)));
+				// color.rgb = min(1, color.rgb + silhouette);
 
 				// fixed4 game = tex2D(_GameTexture, uv);
 				// color.rgb += min(1, color.rgb + game.rgb * game.a);

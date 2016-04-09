@@ -58,14 +58,24 @@
 				motion.rgb *= step(_TresholdMotion, abs(current.r - last.r) + abs(current.g - last.g) + abs(current.b - last.b));
 
 				// Ghost effect
-				float4 fadeOut = tex2D(_MotionTexture, uv) * lerp(_FadeOutRatio, 0.98, _SplashRatio);
+				float ratio = lerp(_FadeOutRatio, 0.98, _SplashRatio);
+				// float4 existingFrag = tex2D(_MotionTexture, uv+0.01.xx);
+				float4 existingFrag = tex2D(_MotionTexture, uv+float2(cos(angle), sin(angle)) * 0.01);
+				float3 fragNormal = normalize(existingFrag.xyz);
+				float3 fadeOutXYZ = lerp (fragNormal*0.2, existingFrag.xyz, ratio);
+				float4 fadeOut = float4(fadeOutXYZ, existingFrag.w); // pack it to float 4
+				//float4 fadeOut = existingFrag * ratio; // old
 
+				float4 newColour = motion*normalize(fadeOut)*2;
 				// Layer Motion
-				col.rgb = lerp(fadeOut, motion, step(0.5, motion));
+				col.rgb = lerp(fadeOut, newColour, step(0.5, motion));
+
+				// col.rgb = _GUIColor * Luminance(col.rgb);
 
 				// Game collectible
 				fixed4 game = tex2D(_GameTexture, uv);
 				col.rgb = lerp(col.rgb, game.rgb, game.a);
+
 
 				// GUI
 				fixed4 gui = tex2D(_GUITexture, uv);

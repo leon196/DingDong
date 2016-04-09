@@ -18,7 +18,7 @@ public class Collectible
 
 	public Collectible (Vector2 pos) 
 	{
-		cooldownSpawn = new Cooldown();
+		cooldownSpawn = new Cooldown(0.2f);
 		cooldownSplash = new Cooldown();
 		position = pos;
 		screenPosition = new Vector2();
