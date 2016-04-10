@@ -104,7 +104,7 @@
 				color.rgb = min(1, color.rgb + gui.rgb * gui.a);
 
 				fixed3 silhouette = step(0.75, Luminance(edgeFilter(_WebcamTexture, uv, _Resolution)));
-				// color.rgb = min(1, color.rgb + silhouette);
+				color.rgb = min(1, color.rgb + silhouette * 0.5);
 
 				// fixed4 game = tex2D(_GameTexture, uv);
 				// color.rgb += min(1, color.rgb + game.rgb * game.a);

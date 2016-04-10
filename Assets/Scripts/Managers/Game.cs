@@ -47,7 +47,7 @@ public class Game : MonoBehaviour
 		UpdateResolution();
 
 		cooldownTransition = new Cooldown(5f);
-		cooldownChilling = new Cooldown(3f);
+		cooldownChilling = new Cooldown(0.5f);
 		cooldownChilling.Start();
 
 		startButton = new Button(new Vector2(0.5f, 0.5f));

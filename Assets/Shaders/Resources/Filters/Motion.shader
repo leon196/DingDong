@@ -33,6 +33,18 @@
 			  return frac(sin(dot(co.xy ,float2(12.9898,78.233))) * 43758.5453);
 			}
 
+			float3 rotateY(float3 v, float t)
+			{
+			    float cost = cos(t); float sint = sin(t);
+			    return float3(v.x * cost + v.z * sint, v.y, -v.x * sint + v.z * cost);
+			}
+
+			float3 rotateX(float3 v, float t)
+			{
+			    float cost = cos(t); float sint = sin(t);
+			    return float3(v.x, v.y * cost - v.z * sint, v.y * sint + v.z * cost);
+			}
+
 			fixed4 frag (v2f_img i) : SV_Target 
 			{
 				fixed4 col = fixed4(1,1,1,1);
@@ -49,6 +61,10 @@
 				uv += float2(cos(angle), sin(angle)) * 0.002 * _SplashRatio;
 
 				angle = Luminance(tex2D(_WebcamTexture, i.uv)) * PI * 2.;
+
+				float ttt = _Time * 2.0;
+				angle += ttt;
+
 				uv += float2(cos(angle), sin(angle)) * 0.002 * _SplashRatio;
 
 				// Cheap Motion Detection
@@ -60,16 +76,46 @@
 				// Ghost effect
 				float ratio = lerp(_FadeOutRatio, 0.98, _SplashRatio);
 				// float4 existingFrag = tex2D(_MotionTexture, uv+0.01.xx);
-				float4 existingFrag = tex2D(_MotionTexture, uv+float2(cos(angle), sin(angle)) * 0.01);
+				float tt = _Time * 4;
+				// angle += rand(position) * 0.3 * (sin(tt) * 0.5 + 0.5);
+				// float speed = distance(uv, 0.5.xx) * 5.0;
+				float speed = Luminance(current);
+				float4 existingFrag = tex2D(_MotionTexture, uv + float2(cos(angle), sin(angle)) * 0.01 * speed);
+
+				// float radius = 0.002;
+				// angle = 0;
+				// fixed r = tex2D(_MotionTexture, uv + float2(cos(angle), sin(angle)) * radius).r;
+				// angle = PI * 2 / 3;
+				// fixed g = tex2D(_MotionTexture, uv + float2(cos(angle), sin(angle)) * radius).g;
+				// angle = PI * 4 / 3;
+				// fixed b = tex2D(_MotionTexture, uv + float2(cos(angle), sin(angle)) * radius).b;
+				// existingFrag.r = r;
+				// existingFrag.g = g;
+				// existingFrag.b = b;
+				
 				float3 fragNormal = normalize(existingFrag.xyz);
-				float3 fadeOutXYZ = lerp (fragNormal*0.2, existingFrag.xyz, ratio);
-				float4 fadeOut = float4(fadeOutXYZ, existingFrag.w); // pack it to float 4
+				float3 fadeOutXYZ = lerp (fragNormal*0.5, existingFrag.xyz, ratio);
+				float4 fadeOut = float4(fadeOutXYZ, 1.); // pack it to float 4
+				// float4 fadeOut = float4(max(, 1.); // pack it to float 4
 				//float4 fadeOut = existingFrag * ratio; // old
 
 				float4 newColour = motion*normalize(fadeOut)*2;
 				// Layer Motion
 				col.rgb = lerp(fadeOut, newColour, step(0.5, motion));
+				
+				fixed3 c = col.rgb;//floor(col.rgb * 32) / 32;
 
+				fixed3 hueFuckup; 
+				hueFuckup.r = rand(c.rgb);
+				hueFuckup.g = rand(c.grb);
+				hueFuckup.b = rand(c.brg);
+
+
+				float TT = _Time * 0.01;
+				col.rgb = rotateY(col.rgb * 2 - 1, TT) * 0.5 + 0.5;
+
+
+				// col.xyz = lerp (col, hueFuckup, 0.1);
 				// col.rgb = _GUIColor * Luminance(col.rgb);
 
 				// Game collectible
@@ -78,8 +124,8 @@
 
 
 				// GUI
-				fixed4 gui = tex2D(_GUITexture, uv);
-				col.rgb = lerp(col.rgb, gui.rgb * _GUIColor.rgb * 0.99, gui.a * _GUIColor.a);
+				// fixed4 gui = tex2D(_GUITexture, uv);
+				// col.rgb = lerp(col.rgb, gui.rgb * _GUIColor.rgb * 0.99, gui.a * _GUIColor.a);
 
 				return col;
 			}
