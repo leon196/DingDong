@@ -10,6 +10,8 @@
 			#pragma fragment frag
 			#pragma target 3.0
 			#include "UnityCG.cginc"
+			#include "edgeFilter.cginc"
+			#include "hueSamHocevar.cginc"
 			#define PI 3.1415926535897
 			
 			sampler2D _MainTex;
@@ -50,37 +52,48 @@
 				fixed4 col = fixed4(1,1,1,1);
 				float2 uv = i.uv;
 				float t = _Time;
+				float tt = _Time * 4;
+				float ttt = _Time * 2;
+				float tttt = _Time * 10;
 
 				// Splash
-				float2 position = uv - _SplashPosition;
+				float2 position = uv - 0.5.xx;
 				float angle = atan2(position.y, position.x);// + t;
 				float variation = rand(float2(floor(angle * 128.) / 128., 0.));
-				uv -= float2(cos(angle), sin(angle)) * 0.01 * _SplashRatio * variation;
+				// uv -= float2(cos(angle), sin(angle)) * 0.001 * variation * _SplashRatio;
+
+				float2 unit = 1 / _Resolution;
 				
 				angle = rand(position) * PI * 2.;
-				uv += float2(cos(angle), sin(angle)) * 0.002 * _SplashRatio;
+				uv += float2(cos(angle), sin(angle)) * 0.002;
 
 				angle = Luminance(tex2D(_WebcamTexture, i.uv)) * PI * 2.;
 
-				float ttt = _Time * 2.0;
-				angle += ttt;
-
-				uv += float2(cos(angle), sin(angle)) * 0.002 * _SplashRatio;
+				uv += float2(cos(angle), sin(angle)) * 0.005;
+				uv = fmod(abs(uv), 1);
 
 				// Cheap Motion Detection
-				float4 motion = fixed4(1,1,1,1);
+				// float4 motion = fixed4(1,1,1,1);
+
+				float hue = fmod(tt, 1);
+
+				float4 motion = float4(hsv2rgb(float3(hue, 1, 1)), 1);
+				// float4 motion = tex2D(_WebcamTexture, uv);
 				float3 current = tex2D(_WebcamTexture, uv).rgb;
 				float3 last = tex2D(_WebcamTextureLast, uv).rgb;
-				motion.rgb *= step(_TresholdMotion, abs(current.r - last.r) + abs(current.g - last.g) + abs(current.b - last.b));
+				// motion.rgb *= step(_TresholdMotion, abs(current.r - last.r) + abs(current.g - last.g) + abs(current.b - last.b));
+
+
+
+				motion.rgb *= step(0.5, Luminance(edgeFilter(_WebcamTexture, uv, _Resolution)));
 
 				// Ghost effect
-				float ratio = lerp(_FadeOutRatio, 0.98, _SplashRatio);
+				float ratio = _FadeOutRatio;//lerp(_FadeOutRatio, 0.98, splashRatio);
 				// float4 existingFrag = tex2D(_MotionTexture, uv+0.01.xx);
-				float tt = _Time * 4;
 				// angle += rand(position) * 0.3 * (sin(tt) * 0.5 + 0.5);
 				// float speed = distance(uv, 0.5.xx) * 5.0;
-				float speed = Luminance(current);
-				float4 existingFrag = tex2D(_MotionTexture, uv + float2(cos(angle), sin(angle)) * 0.01 * speed);
+				// float speed = Luminance(current);
+				float4 existingFrag = tex2D(_MotionTexture, uv);// + float2(cos(angle), sin(angle)) * 0.005);
 
 				// float radius = 0.002;
 				// angle = 0;
@@ -93,26 +106,32 @@
 				// existingFrag.g = g;
 				// existingFrag.b = b;
 				
-				float3 fragNormal = normalize(existingFrag.xyz);
-				float3 fadeOutXYZ = lerp (fragNormal*0.5, existingFrag.xyz, ratio);
-				float4 fadeOut = float4(fadeOutXYZ, 1.); // pack it to float 4
+				// float3 fragNormal = normalize(existingFrag.xyz);
+				// float3 fadeOutXYZ = lerp (fragNormal*0.9, existingFrag.xyz, ratio);
+				// float4 fadeOut = float4(fadeOutXYZ, 1.); // pack it to float 4
+
 				// float4 fadeOut = float4(max(, 1.); // pack it to float 4
-				//float4 fadeOut = existingFrag * ratio; // old
+				// float4 fadeOut = existingFrag * ratio; // old
 
-				float4 newColour = motion*normalize(fadeOut)*2;
+				// fadeOut = max(existingFrag, tex2D(_MainTex, uv) * ratio);
+				float4 fadeOut = existingFrag;// * ratio; 
+
+				// float4 newColour = motion*normalize(fadeOut)*2;
 				// Layer Motion
-				col.rgb = lerp(fadeOut, newColour, step(0.5, motion));
+				col.rgb = lerp(fadeOut, motion, step(0.5, motion));
+
+				// col.rgb = lerp(col.rgb, current, step(0.75, distance(col, current)));
 				
-				fixed3 c = col.rgb;//floor(col.rgb * 32) / 32;
+				// fixed3 c = col.rgb;//floor(col.rgb * 32) / 32;
 
-				fixed3 hueFuckup; 
-				hueFuckup.r = rand(c.rgb);
-				hueFuckup.g = rand(c.grb);
-				hueFuckup.b = rand(c.brg);
+				// fixed3 hueFuckup; 
+				// hueFuckup.r = rand(c.rgb);
+				// hueFuckup.g = rand(c.grb);
+				// hueFuckup.b = rand(c.brg);
 
 
-				float TT = _Time * 0.01;
-				col.rgb = rotateY(col.rgb * 2 - 1, TT) * 0.5 + 0.5;
+				// float TT = _Time * 0.01;
+				// col.rgb = rotateY(col.rgb * 2 - 1, TT) * 0.5 + 0.5;
 
 
 				// col.xyz = lerp (col, hueFuckup, 0.1);

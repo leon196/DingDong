@@ -32,6 +32,11 @@ public class Game : MonoBehaviour
 
 	float debugWebcam = 0f;
 
+	void Awake ()
+	{
+		width = Mathf.Floor(width * Screen.width / Screen.height);
+	}
+
 	void Start () 
 	{
 		gui = GameObject.FindObjectOfType<GUI>();
@@ -140,7 +145,7 @@ public class Game : MonoBehaviour
 		gui.Goto(gameState);
 		gui.UpdateAlpha(1f);
 		Shader.SetGlobalFloat("_SplashRatio", 0f);
-		Shader.SetGlobalFloat("_ShowWebcam", 0.5f);
+		Shader.SetGlobalFloat("_ShowWebcam", 0f);
 		Shader.SetGlobalFloat("_HurtRatio", 0f);
 	}
 	
@@ -404,7 +409,6 @@ public class Game : MonoBehaviour
 
 	void UpdateResolution ()
 	{
-		width = Mathf.Floor(width * Screen.width / Screen.height);
 		collisionDetector.UpdateResolution();
 		Shader.SetGlobalVector("_Resolution", new Vector2(width, height));
 		FrameBuffer[] frameBufferArray = GameObject.FindObjectsOfType<FrameBuffer>();

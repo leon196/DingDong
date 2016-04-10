@@ -33,7 +33,7 @@ public class CollisionDetector : MonoBehaviour
 
 		position = Vector2.zero;
 	}
-/*
+	/*
 	void Update () 
 	{
 		renderTexture = frameBuffer.GetCurrentTexture();

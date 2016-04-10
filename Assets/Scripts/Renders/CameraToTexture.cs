@@ -8,7 +8,8 @@ public class CameraToTexture : MonoBehaviour
 	
 	void Start ()
 	{
-		buffer = new RenderTexture(Screen.width, Screen.height, 24, RenderTextureFormat.ARGB32);
+		// buffer = new RenderTexture(Screen.width, Screen.height, 24, RenderTextureFormat.ARGB32);
+		buffer = new RenderTexture((int)Game.width, (int)Game.height, 24, RenderTextureFormat.ARGB32);
 		buffer.antiAliasing = 2;
 		buffer.Create();
 		GetComponent<Camera>().targetTexture = buffer;
