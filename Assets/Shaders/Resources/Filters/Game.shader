@@ -67,9 +67,11 @@
 				//// color.rgb = lerp(color.rgb, min(1, color.rgb + gui.rgb), 1. - step(0.75, _LightRatio));
 				// color.rgb = min(1, color.rgb + gui.rgb * gui.a);
 
-				fixed3 silhouette = step(0.5, Luminance(edgeFilter(_WebcamTexture, uv, _Resolution)));
+				// fixed3 silhouette = step(0.5, Luminance(edgeFilter(_WebcamTexture, uv, _Resolution)));
+				fixed3 silhouette = Luminance(edgeFilter(_WebcamTexture, uv, _Resolution));
 				// color.rgb = min(1, color.rgb + silhouette * 0.5);
-				color.rgb = max(0, color.rgb - silhouette * 0.5);
+				// color.rgb = lerp(color.rgb, webcam, step(0.5, silhouette));
+				color.rgb *= 1 - clamp(silhouette - 0.25, 0, 1);
 
 				// fixed4 game = tex2D(_GameTexture, uv);
 				// color.rgb += min(1, color.rgb + game.rgb * game.a);

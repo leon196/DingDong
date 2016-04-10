@@ -51,6 +51,7 @@
 			{
 				fixed4 col = fixed4(1,1,1,1);
 				float2 uv = i.uv;
+
 				float t = _Time;
 				float tt = _Time * 4;
 				float ttt = _Time * 2;
@@ -65,11 +66,14 @@
 				float2 unit = 1 / _Resolution;
 				
 				angle = rand(position) * PI * 2.;
-				uv += float2(cos(angle), sin(angle)) * 0.002;
+				uv += float2(cos(angle), sin(angle)) * unit / 2;
 
-				angle = Luminance(tex2D(_WebcamTexture, i.uv)) * PI * 2.;
+				angle = rgb2hsv(tex2D(_WebcamTexture, i.uv).rgb).r * PI * 2;
+				uv += float2(cos(angle), sin(angle)) * unit * 2;
 
-				uv += float2(cos(angle), sin(angle)) * 0.005;
+				angle = Luminance(tex2D(_WebcamTexture, i.uv)) * PI * 4.;
+				uv += float2(cos(angle), sin(angle)) * unit * 2;
+
 				uv = fmod(abs(uv), 1);
 
 				// Cheap Motion Detection
@@ -81,11 +85,10 @@
 				// float4 motion = tex2D(_WebcamTexture, uv);
 				float3 current = tex2D(_WebcamTexture, uv).rgb;
 				float3 last = tex2D(_WebcamTextureLast, uv).rgb;
-				// motion.rgb *= step(_TresholdMotion, abs(current.r - last.r) + abs(current.g - last.g) + abs(current.b - last.b));
-
-
-
-				motion.rgb *= step(0.5, Luminance(edgeFilter(_WebcamTexture, uv, _Resolution)));
+				
+				float movement = step(_TresholdMotion, abs(current.r - last.r) + abs(current.g - last.g) + abs(current.b - last.b));
+				float edge = step(0.5, Luminance(edgeFilter(_WebcamTexture, uv, _Resolution)));
+				motion.rgb *= clamp(edge + movement, 0, 1);
 
 				// Ghost effect
 				float ratio = _FadeOutRatio;//lerp(_FadeOutRatio, 0.98, splashRatio);

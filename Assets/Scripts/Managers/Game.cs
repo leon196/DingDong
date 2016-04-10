@@ -11,8 +11,8 @@ public class Game : MonoBehaviour
 	public AudioClip clipGameOver;
 	public AudioClip clipWin;
 
-	static public float width = 256f;
-	static public float height = 256f;
+	static public float width = 512f;
+	static public float height = 512f;
 
 	public enum GameState { Title, Playing, Transition, Over, Chilling };
 	GameState gameState = GameState.Chilling;
