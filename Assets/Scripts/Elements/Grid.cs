@@ -12,7 +12,7 @@ public class Grid
 	{
 		float x = (index % width) / (float)width + 0.5f / (float)width;
 		float y = Mathf.Floor(index / width) / (float)height + 0.5f / (float)height;
-		return new Vector2(x, y);
+		return new Vector2(x * 0.5f + 0.25f, y * 0.5f + 0.25f);
 	}
 
 	static public Vector2 GetIndexPosition (int index)

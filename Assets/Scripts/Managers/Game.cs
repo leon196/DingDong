@@ -29,6 +29,9 @@ public class Game : MonoBehaviour
 	float playerLife;
 	bool playerHurted;
 
+	float lastSplashTime = 0;
+	float delaySplashTime = 60;
+
 	void Start () 
 	{
 		gui = GameObject.FindObjectOfType<GUI>();
@@ -56,6 +59,7 @@ public class Game : MonoBehaviour
 
 	void GotoTitle ()
 	{
+		lastSplashTime = Time.time;
 		gameState = GameState.Title;
 		gui.Goto(gameState);
 		gui.UpdateAlpha(1f);
@@ -69,6 +73,7 @@ public class Game : MonoBehaviour
 
 	void GotoGame ()
 	{
+		lastSplashTime = Time.time;
 		gameState = GameState.Playing;
 		currentScore = 0f;
 		currentRound = 0;
@@ -85,8 +90,9 @@ public class Game : MonoBehaviour
 		Shader.SetGlobalFloat("_HurtRatio", 0f);
 	}
 
-	void GotoTransition ()
+	void GotoTransition (float delay = 5f)
 	{
+		lastSplashTime = Time.time;
 		gameState = GameState.Transition;
 		gui.Goto(gameState);
 		gui.UpdateAlpha(1f);
@@ -97,10 +103,12 @@ public class Game : MonoBehaviour
 		}
 		
 		cooldownTransition.Start();
+		cooldownTransition.timeDelay = delay;
 	}
 
 	void GotoBackToGame ()
 	{
+		lastSplashTime = Time.time;
 		gameState = GameState.Playing;
 		gui.Goto(gameState);
 		playerHurted = false;
@@ -109,6 +117,7 @@ public class Game : MonoBehaviour
 
 	void GotoNextRound ()
 	{
+		lastSplashTime = Time.time;
 		gameState = GameState.Playing;
 		gui.Goto(gameState);
 		gui.UpdateAlpha(1f);
@@ -127,12 +136,21 @@ public class Game : MonoBehaviour
 		gui.SetOverMessage();
 		ClearLevel();
 		cooldownTransition.Start();
+		cooldownTransition.timeDelay = 5f;
 	}
 	
 	void Update () 
 	{
 		if (Input.GetKeyDown(KeyCode.Escape)) {
 			Application.Quit();
+		}
+
+		if (gameState != GameState.Title && gameState != GameState.Over && lastSplashTime + delaySplashTime < Time.time) {
+			if (collectibleList != null && collectibleList.Count > 0) {
+				collectibleList[0].Splash();
+				Shader.SetGlobalVector("_SplashPosition", collectibleList[0].position);
+			}
+			GotoOver();
 		}
 
 		switch (gameState) {
@@ -166,6 +184,7 @@ public class Game : MonoBehaviour
 					if (collectible.isHitted) 
 					{
 						Shader.SetGlobalFloat("_SplashRatio", 1f - collectible.cooldownSplash.timeRatio);
+						lastSplashTime = Time.time;
 
 						if (collectible.SplashIsOver()) 
 						{
@@ -331,7 +350,7 @@ public class Game : MonoBehaviour
 					} else {
 						gui.SetScore(currentScore, playerLife);
 						playerHurted = true;
-						GotoTransition();
+						GotoTransition(1f);
 						AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
 					}
 				}
