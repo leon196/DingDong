@@ -29,6 +29,8 @@ public class Game : MonoBehaviour
 	float playerLife;
 	bool playerHurted;
 
+	bool showWebcam = false;
+
 	float lastSplashTime = 0;
 	float delaySplashTime = 60;
 
@@ -124,7 +126,7 @@ public class Game : MonoBehaviour
 		ClearCollectibleList();
 		++currentRound;
 		currentBonusCount = Random.Range(3, 3 + (int)Mathf.Clamp(currentRound, 0, 10));
-		SpawnBonus(currentBonusCount, Random.Range(1, 1 + (int)Mathf.Clamp(currentRound, 0, 3)));
+		SpawnBonus(currentBonusCount, Random.Range(3, 1 + (int)Mathf.Clamp(currentRound, 0, 9)));
 		Shader.SetGlobalFloat("_HurtRatio", 0f);
 	}
 
@@ -143,6 +145,11 @@ public class Game : MonoBehaviour
 	{
 		if (Input.GetKeyDown(KeyCode.Escape)) {
 			Application.Quit();
+		}
+
+		if (Input.GetKeyDown(KeyCode.D)) {
+			showWebcam = !showWebcam;
+			Shader.SetGlobalFloat("_ShowWebcam", showWebcam ? 1f : 0f);
 		}
 
 		if (gameState != GameState.Title && gameState != GameState.Over && lastSplashTime + delaySplashTime < Time.time) {
@@ -326,6 +333,10 @@ public class Game : MonoBehaviour
 					gui.SetScore(++currentScore, playerLife);
 					Shader.SetGlobalVector("_SplashPosition", collectible.position);
 					AudioSource.PlayClipAtPoint(clipCollision, Camera.main.transform.position);
+
+					if ((collectible as Bonus).isLife) {
+						++playerLife;
+					}
 
 					// Win check
 					if (collectible.GetType() == typeof(Bonus)) {
